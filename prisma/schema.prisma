@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Job {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceText   String         @map("source_text")
+  sourceTitle  String?        @map("source_title") @db.VarChar(200)
+  lang         String         @db.VarChar(2)
+  langDetected String?        @map("lang_detected") @db.VarChar(2)
+  status       String         @default("pending") @db.VarChar(20)
+  options      Json           @default("{}")
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  completedAt  DateTime?      @map("completed_at") @db.Timestamptz(6)
+
+  levelVersions LevelVersion[]
+  events        JobEvent[]
+
+  @@index([createdAt])
+  @@map("jobs")
+}
+
+model LevelVersion {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jobId             String    @map("job_id") @db.Uuid
+  levelCode         String    @map("level_code") @db.VarChar(20)
+  levelLabel        String    @map("level_label") @db.VarChar(50)
+  status            String    @default("pending") @db.VarChar(20)
+  simplifiedText    String?   @map("simplified_text")
+  attemptCount      Int       @default(0) @map("attempt_count")
+  readabilityMetric String?   @map("readability_metric") @db.VarChar(30)
+  readabilityScore  Decimal?  @map("readability_score") @db.Decimal(6, 2)
+  targetMin         Decimal?  @map("target_min") @db.Decimal(6, 2)
+  targetMax         Decimal?  @map("target_max") @db.Decimal(6, 2)
+  inRange           Boolean?  @map("in_range")
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  job                Job                 @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  verificationReport VerificationReport?
+  keyPhrases         KeyPhrase[]
+  questions          Question[]
+
+  @@unique([jobId, levelCode])
+  @@map("level_versions")
+}
+
+model VerificationReport {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  levelVersionId String   @unique @map("level_version_id") @db.Uuid
+  retainedCount  Int      @map("retained_count")
+  simplifiedCount Int     @map("simplified_count")
+  lostCount      Int      @map("lost_count")
+  items          Json
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  levelVersion LevelVersion @relation(fields: [levelVersionId], references: [id], onDelete: Cascade)
+
+  @@map("verification_reports")
+}
+
+model KeyPhrase {
+  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  levelVersionId String  @map("level_version_id") @db.Uuid
+  position       Int
+  phrase         String  @db.VarChar(200)
+  charStart      Int?    @map("char_start")
+  charEnd        Int?    @map("char_end")
+  gloss          String
+
+  levelVersion LevelVersion @relation(fields: [levelVersionId], references: [id], onDelete: Cascade)
+  questions    Question[]
+
+  @@unique([levelVersionId, position])
+  @@map("key_phrases")
+}
+
+model Question {
+  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  levelVersionId String  @map("level_version_id") @db.Uuid
+  orderIndex     Int     @map("order_index")
+  type           String  @db.VarChar(20)
+  questionText   String  @map("question_text")
+  choices        Json?
+  answer         String
+  explanation    String?
+  keyPhraseId    String? @map("key_phrase_id") @db.Uuid
+
+  levelVersion LevelVersion @relation(fields: [levelVersionId], references: [id], onDelete: Cascade)
+  keyPhrase    KeyPhrase?   @relation(fields: [keyPhraseId], references: [id], onDelete: SetNull)
+
+  @@unique([levelVersionId, orderIndex])
+  @@map("questions")
+}
+
+model JobEvent {
+  id        BigInt   @id @default(autoincrement())
+  jobId     String   @map("job_id") @db.Uuid
+  levelCode String?  @map("level_code") @db.VarChar(20)
+  event     String   @db.VarChar(50)
+  detail    Json?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("job_events")
+}
