@@ -45,12 +45,10 @@ export const keyPhraseSchema = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["position", "phrase", "charStart", "charEnd", "gloss"],
+        required: ["position", "phrase", "gloss"],
         properties: {
           position: { type: "integer", minimum: 1, maximum: 3 },
           phrase: { type: "string" },
-          charStart: { type: "integer", minimum: 0 },
-          charEnd: { type: "integer", minimum: 0 },
           gloss: { type: "string" },
         },
       },

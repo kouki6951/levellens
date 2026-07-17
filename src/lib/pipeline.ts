@@ -31,16 +31,15 @@ function validateKeyPhrases(text: string, phrases: KeyPhraseOffset[]) {
   return phrases.length === 3 && phrases.every((item) => text.slice(item.charStart, item.charEnd) === item.phrase);
 }
 
-/**
- * LLMs occasionally count character positions differently around accented or
- * non-ASCII text. Only repair positions when the returned phrase occurs in the
- * text exactly; otherwise keep the validation failure.
- */
-export function repairKeyPhraseOffsets<T extends KeyPhraseOffset>(text: string, phrases: T[]): T[] | null {
+/** Find offsets server-side so LLM character-count conventions cannot affect stored ranges. */
+export function locateKeyPhrases<T extends { phrase: string }>(
+  text: string,
+  phrases: T[],
+): Array<T & { charStart: number; charEnd: number }> | null {
   if (phrases.length !== 3) return null;
 
   const occupied: Array<{ start: number; end: number }> = [];
-  const repaired: T[] = [];
+  const located: Array<T & { charStart: number; charEnd: number }> = [];
 
   for (const phrase of phrases) {
     if (!phrase.phrase) return null;
@@ -52,15 +51,13 @@ export function repairKeyPhraseOffsets<T extends KeyPhraseOffset>(text: string, 
     }
     if (occurrences.length === 0) return null;
 
-    const start = occurrences.reduce((closest, candidate) =>
-      Math.abs(candidate - phrase.charStart) < Math.abs(closest - phrase.charStart) ? candidate : closest,
-    );
+    const start = occurrences[0];
     const end = start + phrase.phrase.length;
     occupied.push({ start, end });
-    repaired.push({ ...phrase, charStart: start, charEnd: end });
+    located.push({ ...phrase, charStart: start, charEnd: end });
   }
 
-  return validateKeyPhrases(text, repaired) ? repaired : null;
+  return validateKeyPhrases(text, located) ? located : null;
 }
 
 async function runLevel(jobId: string, levelVersionId: string, lang: SupportedLang, sourceText: string, levelCode: string, options: PipelineOptions) {
@@ -138,27 +135,17 @@ async function runLevel(jobId: string, levelVersionId: string, lang: SupportedLa
 
   await prisma.levelVersion.update({ where: { id: levelVersionId }, data: { status: "key_phrases" } });
   let keyPhraseOutput = await extractKeyPhrases(lang, levelCode, finalText);
-  let repaired = !validateKeyPhrases(finalText, keyPhraseOutput.phrases)
-    ? repairKeyPhraseOffsets(finalText, keyPhraseOutput.phrases)
-    : null;
-  if (repaired) {
-    keyPhraseOutput = { ...keyPhraseOutput, phrases: repaired };
-    await logEvent(jobId, levelCode, "key_phrase_offsets_corrected");
-  }
-  for (let retry = 1; retry <= 2 && !validateKeyPhrases(finalText, keyPhraseOutput.phrases); retry += 1) {
+  let located = locateKeyPhrases(finalText, keyPhraseOutput.phrases);
+  for (let retry = 1; retry <= 2 && !located; retry += 1) {
     await logEvent(jobId, levelCode, "key_phrase_retry", { retry });
     keyPhraseOutput = await extractKeyPhrases(lang, levelCode, finalText);
-    repaired = repairKeyPhraseOffsets(finalText, keyPhraseOutput.phrases);
-    if (repaired) {
-      keyPhraseOutput = { ...keyPhraseOutput, phrases: repaired };
-      await logEvent(jobId, levelCode, "key_phrase_offsets_corrected");
-    }
+    located = locateKeyPhrases(finalText, keyPhraseOutput.phrases);
   }
-  if (!validateKeyPhrases(finalText, keyPhraseOutput.phrases)) throw new Error("Key phrase offsets did not match simplified text.");
+  if (!located) throw new Error("Key phrases were not copied exactly from simplified text.");
 
   await prisma.keyPhrase.deleteMany({ where: { levelVersionId } });
   const keyPhrases = await Promise.all(
-    keyPhraseOutput.phrases.map((phrase) =>
+    located.map((phrase) =>
       prisma.keyPhrase.create({
         data: {
           levelVersionId,

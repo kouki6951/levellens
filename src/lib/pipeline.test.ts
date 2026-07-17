@@ -1,19 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { repairKeyPhraseOffsets } from "./pipeline";
+import { locateKeyPhrases } from "./pipeline";
 
-describe("repairKeyPhraseOffsets", () => {
-  it("repairs one-based LLM offsets for Spanish text with accented characters", () => {
+describe("locateKeyPhrases", () => {
+  it("calculates offsets for Spanish text with accented characters", () => {
     const text = "La pensión incluye un pago llamado shibō ichijikin para la familia.";
     const phrases = [
-      { phrase: "pensión", charStart: 4, charEnd: 11 },
-      { phrase: "shibō ichijikin", charStart: 34, charEnd: 49 },
-      { phrase: "la familia", charStart: 56, charEnd: 66 },
+      { phrase: "pensión" },
+      { phrase: "shibō ichijikin" },
+      { phrase: "la familia" },
     ];
 
-    const repaired = repairKeyPhraseOffsets(text, phrases);
+    const located = locateKeyPhrases(text, phrases);
 
-    expect(repaired).not.toBeNull();
-    for (const phrase of repaired ?? []) {
+    expect(located).not.toBeNull();
+    for (const phrase of located ?? []) {
       expect(text.slice(phrase.charStart, phrase.charEnd)).toBe(phrase.phrase);
     }
   });
@@ -21,11 +21,11 @@ describe("repairKeyPhraseOffsets", () => {
   it("rejects phrases that are not copied from the simplified text", () => {
     const text = "La pensión incluye un pago único para la familia.";
     const phrases = [
-      { phrase: "pensión", charStart: 0, charEnd: 0 },
-      { phrase: "pago único", charStart: 0, charEnd: 0 },
-      { phrase: "beneficio perdido", charStart: 0, charEnd: 0 },
+      { phrase: "pensión" },
+      { phrase: "pago único" },
+      { phrase: "beneficio perdido" },
     ];
 
-    expect(repairKeyPhraseOffsets(text, phrases)).toBeNull();
+    expect(locateKeyPhrases(text, phrases)).toBeNull();
   });
 });

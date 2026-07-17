@@ -19,8 +19,6 @@ export type KeyPhraseOutput = {
   phrases: Array<{
     position: number;
     phrase: string;
-    charStart: number;
-    charEnd: number;
     gloss: string;
   }>;
 };

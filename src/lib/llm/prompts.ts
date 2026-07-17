@@ -39,7 +39,6 @@ export function buildKeyPhrasePrompt(lang: SupportedLang, levelCode: string, sim
     "Extract exactly 3 important phrases from the simplified text.",
     `Language: ${lang}. Reading level: ${level.label}.`,
     "Each phrase must be copied exactly from the simplified text.",
-    "charStart is the zero-based character offset where the exact phrase starts; charEnd is the exclusive end offset.",
     "Write each gloss at the same reading level as the simplified text.",
     `Simplified text:\n${simplifiedText}`,
   ].join("\n\n");
