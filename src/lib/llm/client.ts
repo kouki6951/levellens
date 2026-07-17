@@ -20,7 +20,7 @@ export class LlmError extends Error {
   }
 }
 
-export async function structuredOutput<T>(name: string, schema: object, prompt: string): Promise<T> {
+export async function structuredOutput<T>(name: string, schema: Record<string, unknown>, prompt: string): Promise<T> {
   const model = process.env.OPENAI_MODEL || DEFAULT_MODEL;
   let lastError: unknown;
 

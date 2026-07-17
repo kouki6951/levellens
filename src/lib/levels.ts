@@ -191,7 +191,7 @@ export const LEVELS = [
 
 export type LevelCode = (typeof LEVELS)[number]["code"];
 
-export const LEVEL_BY_CODE = Object.fromEntries(LEVELS.map((level) => [level.code, level])) as Record<LevelCode, LevelSpec>;
+export const LEVEL_BY_CODE = Object.fromEntries(LEVELS.map((level) => [level.code, level])) as unknown as Record<LevelCode, LevelSpec>;
 
 export function levelsForLang(lang: SupportedLang) {
   return LEVELS.filter((level) => level.lang === lang);
