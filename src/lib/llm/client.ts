@@ -1,11 +1,15 @@
 import OpenAI from "openai";
 
 const DEFAULT_MODEL = "gpt-5.6";
+const DEFAULT_TIMEOUT_MS = 45_000;
 
 let client: OpenAI | null = null;
 
 function getClient() {
-  client ??= new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const configuredTimeout = Number(process.env.OPENAI_TIMEOUT_MS || DEFAULT_TIMEOUT_MS);
+  const timeout = Number.isFinite(configuredTimeout) && configuredTimeout > 0 ? configuredTimeout : DEFAULT_TIMEOUT_MS;
+  // Retries are owned by structuredOutput so every retry is logged and bounded.
+  client ??= new OpenAI({ apiKey: process.env.OPENAI_API_KEY, maxRetries: 0, timeout });
   return client;
 }
 

@@ -136,13 +136,19 @@ async function runLevel(jobId: string, levelVersionId: string, lang: SupportedLa
     lostCount: factCheck.lostCount,
   });
 
+  await prisma.levelVersion.update({ where: { id: levelVersionId }, data: { status: "key_phrases" } });
   let keyPhraseOutput = await extractKeyPhrases(lang, levelCode, finalText);
+  let repaired = !validateKeyPhrases(finalText, keyPhraseOutput.phrases)
+    ? repairKeyPhraseOffsets(finalText, keyPhraseOutput.phrases)
+    : null;
+  if (repaired) {
+    keyPhraseOutput = { ...keyPhraseOutput, phrases: repaired };
+    await logEvent(jobId, levelCode, "key_phrase_offsets_corrected");
+  }
   for (let retry = 1; retry <= 2 && !validateKeyPhrases(finalText, keyPhraseOutput.phrases); retry += 1) {
     await logEvent(jobId, levelCode, "key_phrase_retry", { retry });
     keyPhraseOutput = await extractKeyPhrases(lang, levelCode, finalText);
-  }
-  if (!validateKeyPhrases(finalText, keyPhraseOutput.phrases)) {
-    const repaired = repairKeyPhraseOffsets(finalText, keyPhraseOutput.phrases);
+    repaired = repairKeyPhraseOffsets(finalText, keyPhraseOutput.phrases);
     if (repaired) {
       keyPhraseOutput = { ...keyPhraseOutput, phrases: repaired };
       await logEvent(jobId, levelCode, "key_phrase_offsets_corrected");
@@ -168,6 +174,7 @@ async function runLevel(jobId: string, levelVersionId: string, lang: SupportedLa
   await logEvent(jobId, levelCode, "key_phrases_done");
 
   if (options.questionCount > 0) {
+    await prisma.levelVersion.update({ where: { id: levelVersionId }, data: { status: "questions" } });
     const questionOutput = await generateQuestions(
       lang,
       levelCode,

@@ -7,6 +7,8 @@ function progressFor(status: string, attempt: number) {
     converting: "convert",
     verifying: "verify",
     fact_checking: "fact_check",
+    key_phrases: "key_phrases",
+    questions: "questions",
     completed: "completed",
     failed: "failed",
   };
