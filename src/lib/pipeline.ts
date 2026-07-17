@@ -21,8 +21,46 @@ async function logEvent(jobId: string, levelCode: string | null, event: string, 
   await prisma.jobEvent.create({ data: { jobId, levelCode, event, detail } });
 }
 
-function validateKeyPhrases(text: string, phrases: Array<{ phrase: string; charStart: number; charEnd: number }>) {
+type KeyPhraseOffset = {
+  phrase: string;
+  charStart: number;
+  charEnd: number;
+};
+
+function validateKeyPhrases(text: string, phrases: KeyPhraseOffset[]) {
   return phrases.length === 3 && phrases.every((item) => text.slice(item.charStart, item.charEnd) === item.phrase);
+}
+
+/**
+ * LLMs occasionally count character positions differently around accented or
+ * non-ASCII text. Only repair positions when the returned phrase occurs in the
+ * text exactly; otherwise keep the validation failure.
+ */
+export function repairKeyPhraseOffsets<T extends KeyPhraseOffset>(text: string, phrases: T[]): T[] | null {
+  if (phrases.length !== 3) return null;
+
+  const occupied: Array<{ start: number; end: number }> = [];
+  const repaired: T[] = [];
+
+  for (const phrase of phrases) {
+    if (!phrase.phrase) return null;
+
+    const occurrences: number[] = [];
+    for (let index = text.indexOf(phrase.phrase); index !== -1; index = text.indexOf(phrase.phrase, index + 1)) {
+      const end = index + phrase.phrase.length;
+      if (!occupied.some((range) => index < range.end && end > range.start)) occurrences.push(index);
+    }
+    if (occurrences.length === 0) return null;
+
+    const start = occurrences.reduce((closest, candidate) =>
+      Math.abs(candidate - phrase.charStart) < Math.abs(closest - phrase.charStart) ? candidate : closest,
+    );
+    const end = start + phrase.phrase.length;
+    occupied.push({ start, end });
+    repaired.push({ ...phrase, charStart: start, charEnd: end });
+  }
+
+  return validateKeyPhrases(text, repaired) ? repaired : null;
 }
 
 async function runLevel(jobId: string, levelVersionId: string, lang: SupportedLang, sourceText: string, levelCode: string, options: PipelineOptions) {
@@ -102,6 +140,13 @@ async function runLevel(jobId: string, levelVersionId: string, lang: SupportedLa
   for (let retry = 1; retry <= 2 && !validateKeyPhrases(finalText, keyPhraseOutput.phrases); retry += 1) {
     await logEvent(jobId, levelCode, "key_phrase_retry", { retry });
     keyPhraseOutput = await extractKeyPhrases(lang, levelCode, finalText);
+  }
+  if (!validateKeyPhrases(finalText, keyPhraseOutput.phrases)) {
+    const repaired = repairKeyPhraseOffsets(finalText, keyPhraseOutput.phrases);
+    if (repaired) {
+      keyPhraseOutput = { ...keyPhraseOutput, phrases: repaired };
+      await logEvent(jobId, levelCode, "key_phrase_offsets_corrected");
+    }
   }
   if (!validateKeyPhrases(finalText, keyPhraseOutput.phrases)) throw new Error("Key phrase offsets did not match simplified text.");
 

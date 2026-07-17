@@ -87,10 +87,13 @@ export default function ResultPage() {
       }
       setJob(data);
       setSelectedCode((current) => current || data.levels[0]?.levelCode || null);
+      if (["completed", "partially_failed", "failed"].includes(data.status)) {
+        window.clearInterval(interval);
+      }
     }
 
-    load();
     const interval = window.setInterval(load, 2000);
+    load();
     return () => {
       cancelled = true;
       window.clearInterval(interval);
@@ -141,7 +144,9 @@ export default function ResultPage() {
           <article className="min-h-[540px] rounded border border-stone-300 bg-white p-5 text-lg leading-8">
             {selectedLevel.result ? highlightedText(selectedLevel.result.simplifiedText, selectedLevel.result.keyPhrases) : (
               <div className="text-stone-600">
-                {selectedLevel.progress.step} in progress, attempt {selectedLevel.progress.attempt}/{selectedLevel.progress.maxAttempts}
+                {selectedLevel.status === "failed"
+                  ? `This level failed after ${selectedLevel.progress.attempt}/${selectedLevel.progress.maxAttempts} verification attempts.`
+                  : `${selectedLevel.progress.step} in progress, attempt ${selectedLevel.progress.attempt}/${selectedLevel.progress.maxAttempts}`}
               </div>
             )}
           </article>
