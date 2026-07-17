@@ -6,6 +6,8 @@ import { validateSimplifyPayload } from "@/lib/api/validation";
 import { levelForCode } from "@/lib/levels";
 import { runPipeline } from "@/lib/pipeline";
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   const payload = await request.json().catch(() => null);
   const validated = validateSimplifyPayload(payload);

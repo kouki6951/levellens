@@ -1,6 +1,6 @@
 # LevelLens API設計書
 
-- 版数: v1.0 (2026-07-17)
+- 版数: v1.1 (2026-07-17)
 - 実装: Next.js App Router Route Handlers (`app/api/**/route.ts`)
 - 形式: JSON / UTF-8。日時は ISO 8601 (UTC)。
 - 認証: なし（jobId 所持 = アクセス権）。全エンドポイントにレートリミット（IP 単位、簡易実装で可）。
@@ -96,7 +96,7 @@
 
 **LLM 呼び出し設計**
 - (1)(3)(4)(5) は Structured Outputs (JSON Schema) で受け、パース失敗によるリトライを排除する。
-- (2) の採点は textstat (EN/ES) と自前 JA スコアラー。**LLM に自己採点させない**（検証の独立性が製品の核）。
+- (2) の採点は EN が `text-readability` による FKGL、ES が純粋関数の Fernández-Huerta、JA が教育漢字・文長ベースの複合指標。**LLM に自己採点させない**（検証の独立性が製品の核）。
 - 修正指示の例: `"Current FKGL is 3.9 (target 2.5–3.5). Shorten sentences (avg ≤ 10 words) and replace multi-syllable words: 'evaporation' → 'turns into vapor'..."` のように、測定値から機械生成した具体的指示を与える。
 
 ---
@@ -185,7 +185,7 @@
 
 **Response 200**: `Content-Type: application/pdf`（`Content-Disposition: attachment; filename="LevelLens_TheWaterCycle.pdf"`）
 
-- 実装: @react-pdf/renderer または Puppeteer（印刷 CSS）。JA フォント同梱を忘れないこと（Noto Sans JP）。
+- 実装: `@react-pdf/renderer`。Vercel のサーバレス環境で Chromium バイナリを必要とせず、React の同一コンポーネントを S4 のプレビューとダウンロード生成に共有できるため採用する。JA フォントは Noto Sans JP を埋め込む。
 - 複数レベルは 1 PDF に連結。解答ページは末尾にまとめる。
 - 未完了レベルを指定した場合: `409 LEVEL_NOT_READY`。
 
@@ -200,13 +200,15 @@
 { "levelVersionId": "...", "status": "converting" }
 ```
 
+- 再生成可能なのは `failed`、または `completed` かつ `inRange=false` のレベルのみ。開始時に既存の事実照合・キーフレーズ・設問を削除し、同じ level_version に新しいパイプライン結果を保存する。
+
 ---
 
 ## 6. POST /api/questions/[id]/regenerate（P1）
 
 設問 1 件を同条件で再生成して置き換える。
 
-**Response 200**: 新しい question オブジェクト。
+**Response 200**: 同じ id と表示順を維持して置換された question オブジェクト。関連するキーフレーズがある場合は再生成時にも入力へ渡す。
 
 ---
 

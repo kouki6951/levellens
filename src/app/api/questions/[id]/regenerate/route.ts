@@ -1,0 +1,49 @@
+import { Prisma } from "@prisma/client";
+import { NextResponse } from "next/server";
+import { apiError } from "@/lib/api/errors";
+import { prisma } from "@/lib/db";
+import { generateQuestions } from "@/lib/llm";
+import type { SupportedLang } from "@/lib/levels";
+
+export async function POST(_request: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
+  const question = await prisma.question.findUnique({
+    where: { id },
+    include: { levelVersion: { include: { job: true, keyPhrases: { orderBy: { position: "asc" } } } } },
+  });
+  if (!question || !question.levelVersion.simplifiedText) return apiError("LEVEL_NOT_FOUND", "Question or completed level not found.");
+
+  const output = await generateQuestions(
+    question.levelVersion.job.lang as SupportedLang,
+    question.levelVersion.levelCode,
+    question.levelVersion.simplifiedText,
+    question.levelVersion.keyPhrases.map((phrase) => ({ position: phrase.position, phrase: phrase.phrase, gloss: phrase.gloss })),
+    1,
+    question.type as "multiple_choice" | "open_ended",
+  );
+  const replacement = output.questions[0];
+  if (!replacement) return apiError("LLM_ERROR", "Question regeneration returned no question.");
+
+  const linkedPhrase = question.levelVersion.keyPhrases.find((phrase) => phrase.position === replacement.keyPhrasePosition);
+  const updated = await prisma.question.update({
+    where: { id: question.id },
+    data: {
+      type: replacement.type,
+      questionText: replacement.questionText,
+      choices: replacement.type === "multiple_choice" ? replacement.choices : Prisma.JsonNull,
+      answer: replacement.answer,
+      explanation: replacement.explanation,
+      keyPhraseId: linkedPhrase?.id,
+    },
+  });
+  return NextResponse.json({
+    id: updated.id,
+    orderIndex: updated.orderIndex,
+    type: updated.type,
+    questionText: updated.questionText,
+    choices: updated.choices,
+    answer: updated.answer,
+    explanation: updated.explanation,
+    keyPhraseId: updated.keyPhraseId,
+  });
+}

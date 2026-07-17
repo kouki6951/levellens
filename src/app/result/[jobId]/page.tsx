@@ -10,6 +10,7 @@ type JobResponse = {
   sourceTitle: string | null;
   lang: string;
   levels: Array<{
+    id: string;
     levelCode: string;
     levelLabel: string;
     status: string;
@@ -56,7 +57,7 @@ function highlightedText(text: string, phrases: LevelResult["keyPhrases"]) {
     if (phrase.charStart < cursor) continue;
     parts.push(text.slice(cursor, phrase.charStart));
     parts.push(
-      <mark key={phrase.id} className="rounded bg-amber-200 px-1" title={phrase.gloss}>
+      <mark id={`key-phrase-${phrase.id}`} key={phrase.id} className="rounded bg-amber-200 px-1 transition-colors" title={phrase.gloss}>
         {text.slice(phrase.charStart, phrase.charEnd)}
       </mark>,
     );
@@ -82,6 +83,8 @@ export default function ResultPage() {
   const [job, setJob] = useState<JobResponse | null>(null);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pollKey, setPollKey] = useState(0);
+  const [regenerating, setRegenerating] = useState(false);
 
   useEffect(() => {
     if (!jobId) return;
@@ -108,9 +111,31 @@ export default function ResultPage() {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [jobId]);
+  }, [jobId, pollKey]);
 
   const selectedLevel = useMemo(() => job?.levels.find((level) => level.levelCode === selectedCode) || job?.levels[0], [job, selectedCode]);
+
+  async function regenerateLevel() {
+    if (!selectedLevel) return;
+    setRegenerating(true);
+    const response = await fetch(`/api/levels/${selectedLevel.id}/regenerate`, { method: "POST" });
+    if (!response.ok) {
+      const data = await response.json();
+      setError(data.error?.message || "Could not regenerate this level.");
+      setRegenerating(false);
+      return;
+    }
+    setPollKey((value) => value + 1);
+    setRegenerating(false);
+  }
+
+  function focusKeyPhrase(id: string) {
+    const element = document.getElementById(`key-phrase-${id}`);
+    if (!element) return;
+    element.scrollIntoView({ behavior: "smooth", block: "center" });
+    element.classList.add("bg-amber-400", "ring-2", "ring-amber-500");
+    window.setTimeout(() => element.classList.remove("bg-amber-400", "ring-2", "ring-amber-500"), 900);
+  }
 
   if (error) {
     return (
@@ -132,9 +157,11 @@ export default function ResultPage() {
             <p className="text-sm text-stone-600">{job.lang.toUpperCase()} material</p>
             <h1 className="text-2xl font-semibold">{job.sourceTitle || "Generated versions"}</h1>
           </div>
-          <Link href="/" className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">
-            New material
-          </Link>
+          <div className="flex gap-2">
+            <Link href={`/result/${jobId}/questions`} className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">Questions</Link>
+            <Link href={`/result/${jobId}/export`} className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">Export</Link>
+            <Link href="/" className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">New material</Link>
+          </div>
         </header>
 
         <nav className="flex flex-wrap gap-2">
@@ -159,6 +186,16 @@ export default function ResultPage() {
                   : <><span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-stone-300 border-t-stone-700" />{selectedLevel.progress.step} in progress, attempt {selectedLevel.progress.attempt}/{selectedLevel.progress.maxAttempts}</>}
               </div>
             )}
+            {(selectedLevel.status === "failed" || (selectedLevel.status === "completed" && selectedLevel.result.readability.inRange === false)) ? (
+              <button
+                type="button"
+                onClick={regenerateLevel}
+                disabled={regenerating}
+                className="mt-6 rounded border border-stone-800 px-3 py-2 text-sm disabled:opacity-50"
+              >
+                {regenerating ? "Regenerating..." : "Regenerate level"}
+              </button>
+            ) : null}
           </article>
 
           <aside className="space-y-4">
@@ -199,7 +236,7 @@ export default function ResultPage() {
               {selectedLevel.result.keyPhrases.length > 0 ? (
                 <div className="space-y-3">
                   {selectedLevel.result.keyPhrases.map((phrase) => (
-                    <div key={phrase.id} className="text-sm">
+                    <div key={phrase.id} className="cursor-pointer text-sm" onMouseEnter={() => focusKeyPhrase(phrase.id)}>
                       <p className="font-medium">{phrase.phrase}</p>
                       <p className="text-stone-600">{phrase.gloss}</p>
                     </div>

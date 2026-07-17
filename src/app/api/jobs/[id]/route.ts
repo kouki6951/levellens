@@ -39,6 +39,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     sourceTitle: job.sourceTitle,
     lang: job.lang,
     levels: job.levelVersions.map((level) => ({
+      id: level.id,
       levelCode: level.levelCode,
       levelLabel: level.levelLabel,
       status: level.status,

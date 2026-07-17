@@ -33,10 +33,12 @@ export function japaneseScoreDetails(text: string) {
   const lengths = japaneseSentenceLengths(text);
   const averageSentenceLength = lengths.length === 0 ? 0 : lengths.reduce((sum, length) => sum + length, 0) / lengths.length;
   const averageKanjiGrade = grades.length === 0 ? 1 : grades.reduce((sum, grade) => sum + Math.min(grade, 6.5), 0) / grades.length;
-  const highGrade = grades.length === 0 ? 1 : [...grades].sort((a, b) => a - b)[Math.max(0, Math.ceil(grades.length * 0.8) - 1)];
+  // The 95th percentile keeps a small amount of advanced kanji visible in the
+  // estimate without letting one proper noun determine the whole result.
+  const highGrade = grades.length === 0 ? 1 : [...grades].sort((a, b) => a - b)[Math.max(0, Math.ceil(grades.length * 0.95) - 1)];
   const unknownRatio = grades.length === 0 ? 0 : grades.filter((grade) => grade > 6).length / grades.length;
   const longSentencePenalty = Math.max(0, averageSentenceLength - 25) / 30;
-  const score = Math.min(6.5, Math.max(1, averageKanjiGrade * 0.65 + Math.min(highGrade, 6.5) * 0.35 + unknownRatio * 0.8 + longSentencePenalty));
+  const score = Math.min(6.5, Math.max(1, averageKanjiGrade * 0.5 + Math.min(highGrade, 6.5) * 0.5 + unknownRatio * 0.8 + longSentencePenalty));
   const kanjiGrades = Object.fromEntries([...new Set(kanji)].map((character) => [character, KANJI_GRADE.get(character) ?? 7]));
 
   return { score: Number(score.toFixed(2)), averageSentenceLength: Number(averageSentenceLength.toFixed(1)), kanjiGrades };

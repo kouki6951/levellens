@@ -1,6 +1,6 @@
 # LevelLens DB設計書
 
-- 版数: v1.0 (2026-07-17)
+- 版数: v1.1 (2026-07-17)
 - DBMS: PostgreSQL（Vercel Postgres / Neon を想定）
 - ORM: Prisma（Codex との相性が良く、スキーマ駆動で速い）
 - 方針: ハッカソンスコープのため**認証なし・匿名利用**。ジョブ ID（UUID）を知っている人だけが結果にアクセスできる「URL がパスワード」方式。teachers/users テーブルは将来拡張として定義のみ記載。
@@ -150,16 +150,16 @@ jobs 1 ──── * level_versions 1 ──── * key_phrases
 | en_g4-5 | EN | FKGL | 4.0 – 5.5 |
 | en_g6-8 | EN | FKGL | 6.0 – 8.5 |
 | en_ell_a2b1 | EN | FKGL + CEFR 語彙 | 3.0 – 5.0 |
-| ja_sho1-2 | JA | 複合指標* | 学年帯 1–2 |
-| ja_sho3-4 | JA | 複合指標* | 学年帯 3–4 |
-| ja_sho5-6 | JA | 複合指標* | 学年帯 5–6 |
-| ja_jlpt_n4n3 | JA | 複合指標* + JLPT 語彙 | N4–N3 帯 |
-| es_g2-3 | ES | Fernández-Huerta | 91 – 100 |
-| es_g4-5 | ES | Fernández-Huerta | 81 – 90 |
-| es_g6-8 | ES | Fernández-Huerta | 66 – 80 |
-| es_cefr_a2b1 | ES | Fernández-Huerta + CEFR 語彙 | 76 – 90 |
+| ja_sho1-2 | JA | 複合指標* | 1.0 – 2.5 |
+| ja_sho3-4 | JA | 複合指標* | 2.6 – 4.5 |
+| ja_sho5-6 | JA | 複合指標* | 4.6 – 6.5 |
+| ja_jlpt_n4n3 | JA | 複合指標* | 2.0 – 3.5 |
+| es_g2-3 | ES | Fernández-Huerta | 91 – 105 |
+| es_g4-5 | ES | Fernández-Huerta | 70 – 90 |
+| es_g6-8 | ES | Fernández-Huerta | 45 – 70 |
+| es_cefr_a2b1 | ES | Fernández-Huerta | 70 – 90 |
 
-\* JA 複合指標 = 学年別漢字配当表の逸脱率 + 平均文長 + 語彙難易度の重み付き合成。実装時にチューニングし、係数は定数化する。ES のレンジ値は仮置きであり、実装初日にサンプル文で校正すること。
+\* JA 複合指標 = 1,026 字の教育漢字の学年分布（平均と上位 5%）+ 未配当漢字率 + 平均文長による連続値の推定学年帯。JLPT N4–N3 は専用語彙表を使わず同スケールで近似する。ES のレンジは easy/middle/hard の3フィクスチャで校正済みであり、今後は実教材の評価データで再校正する。
 
 **マスタを DB にしない理由**: ハッカソン期間中に頻繁に調整するため、コード内定数（TypeScript の const）の方がマイグレーション不要で速い。
 

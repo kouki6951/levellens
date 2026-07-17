@@ -200,6 +200,60 @@ async function runLevel(jobId: string, levelVersionId: string, lang: SupportedLa
   await logEvent(jobId, levelCode, "level_completed", { inRange, score: finalScore.score });
 }
 
+async function finalizeJob(jobId: string) {
+  const levels = await prisma.levelVersion.findMany({ where: { jobId }, select: { status: true } });
+  const failed = levels.filter((level) => level.status === "failed").length;
+  const active = levels.some((level) => !["completed", "failed"].includes(level.status));
+  if (active) return;
+
+  const status = failed === 0 ? "completed" : failed === levels.length ? "failed" : "partially_failed";
+  await prisma.job.update({ where: { id: jobId }, data: { status, completedAt: new Date() } });
+  await logEvent(jobId, null, "job_finished", { status, failed });
+}
+
+export async function runPipelineForLevel(levelVersionId: string) {
+  const levelVersion = await prisma.levelVersion.findUnique({
+    where: { id: levelVersionId },
+    include: { job: true },
+  });
+  if (!levelVersion) throw new Error(`Level version not found: ${levelVersionId}`);
+
+  await prisma.$transaction([
+    prisma.question.deleteMany({ where: { levelVersionId } }),
+    prisma.keyPhrase.deleteMany({ where: { levelVersionId } }),
+    prisma.verificationReport.deleteMany({ where: { levelVersionId } }),
+    prisma.levelVersion.update({
+      where: { id: levelVersionId },
+      data: {
+        status: "pending",
+        simplifiedText: null,
+        attemptCount: 0,
+        readabilityScore: null,
+        inRange: null,
+      },
+    }),
+    prisma.job.update({ where: { id: levelVersion.jobId }, data: { status: "processing", completedAt: null } }),
+  ]);
+  await logEvent(levelVersion.jobId, levelVersion.levelCode, "level_regeneration_started");
+
+  try {
+    await runLevel(
+      levelVersion.jobId,
+      levelVersion.id,
+      levelVersion.job.lang as SupportedLang,
+      levelVersion.job.sourceText,
+      levelVersion.levelCode,
+      levelVersion.job.options as PipelineOptions,
+    );
+  } catch (error) {
+    await prisma.levelVersion.update({ where: { id: levelVersion.id }, data: { status: "failed" } });
+    await logEvent(levelVersion.jobId, levelVersion.levelCode, "level_failed", { message: error instanceof Error ? error.message : "Unknown error" });
+    throw error;
+  } finally {
+    await finalizeJob(levelVersion.jobId);
+  }
+}
+
 export async function runPipeline(jobId: string) {
   const job = await prisma.job.findUnique({ where: { id: jobId }, include: { levelVersions: true } });
   if (!job) throw new Error(`Job not found: ${jobId}`);
@@ -218,8 +272,6 @@ export async function runPipeline(jobId: string) {
     ),
   );
 
-  const failed = results.filter((result) => result.status === "rejected").length;
-  const status = failed === 0 ? "completed" : failed === results.length ? "failed" : "partially_failed";
-  await prisma.job.update({ where: { id: jobId }, data: { status, completedAt: new Date() } });
-  await logEvent(jobId, null, "job_finished", { status, failed });
+  void results;
+  await finalizeJob(jobId);
 }
