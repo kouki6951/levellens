@@ -162,3 +162,9 @@ jobs 1 ──── * level_versions 1 ──── * key_phrases
 \* JA 複合指標 = 学年別漢字配当表の逸脱率 + 平均文長 + 語彙難易度の重み付き合成。実装時にチューニングし、係数は定数化する。ES のレンジ値は仮置きであり、実装初日にサンプル文で校正すること。
 
 **マスタを DB にしない理由**: ハッカソン期間中に頻繁に調整するため、コード内定数（TypeScript の const）の方がマイグレーション不要で速い。
+
+### Progressive S2 persistence (all languages)
+
+`level_versions` is the source of truth for progressive rendering in EN, ES, and JA. The server persists `simplified_text` and readability fields after each verification attempt, then persists `verification_reports`, `key_phrases`, and `questions` independently. UI clients may therefore read a partial level while the job remains `processing`.
+
+The level status progression is `pending -> converting -> verifying -> fact_checking -> key_phrases -> questions -> completed`, with `failed` available from any active stage.

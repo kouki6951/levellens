@@ -43,46 +43,43 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
       levelLabel: level.levelLabel,
       status: level.status,
       progress: progressFor(level.status, level.attemptCount),
-      result:
-        level.status === "completed"
+      result: {
+        simplifiedText: level.simplifiedText,
+        readability: {
+          metric: level.readabilityMetric,
+          score: level.readabilityScore === null ? null : Number(level.readabilityScore),
+          targetMin: level.targetMin === null ? null : Number(level.targetMin),
+          targetMax: level.targetMax === null ? null : Number(level.targetMax),
+          inRange: level.inRange,
+          attemptCount: level.attemptCount,
+        },
+        factCheck: level.verificationReport
           ? {
-              simplifiedText: level.simplifiedText,
-              readability: {
-                metric: level.readabilityMetric,
-                score: level.readabilityScore === null ? null : Number(level.readabilityScore),
-                targetMin: level.targetMin === null ? null : Number(level.targetMin),
-                targetMax: level.targetMax === null ? null : Number(level.targetMax),
-                inRange: level.inRange,
-                attemptCount: level.attemptCount,
-              },
-              factCheck: level.verificationReport
-                ? {
-                    retained: level.verificationReport.retainedCount,
-                    simplified: level.verificationReport.simplifiedCount,
-                    lost: level.verificationReport.lostCount,
-                    items: level.verificationReport.items,
-                  }
-                : null,
-              keyPhrases: level.keyPhrases.map((phrase) => ({
-                id: phrase.id,
-                position: phrase.position,
-                phrase: phrase.phrase,
-                charStart: phrase.charStart,
-                charEnd: phrase.charEnd,
-                gloss: phrase.gloss,
-              })),
-              questions: level.questions.map((question) => ({
-                id: question.id,
-                orderIndex: question.orderIndex,
-                type: question.type,
-                questionText: question.questionText,
-                choices: question.choices,
-                answer: question.answer,
-                explanation: question.explanation,
-                keyPhraseId: question.keyPhraseId,
-              })),
+              retained: level.verificationReport.retainedCount,
+              simplified: level.verificationReport.simplifiedCount,
+              lost: level.verificationReport.lostCount,
+              items: level.verificationReport.items,
             }
-          : undefined,
+          : null,
+        keyPhrases: level.keyPhrases.map((phrase) => ({
+          id: phrase.id,
+          position: phrase.position,
+          phrase: phrase.phrase,
+          charStart: phrase.charStart,
+          charEnd: phrase.charEnd,
+          gloss: phrase.gloss,
+        })),
+        questions: level.questions.map((question) => ({
+          id: question.id,
+          orderIndex: question.orderIndex,
+          type: question.type,
+          questionText: question.questionText,
+          choices: question.choices,
+          answer: question.answer,
+          explanation: question.explanation,
+          keyPhraseId: question.keyPhraseId,
+        })),
+      },
     })),
   });
 }

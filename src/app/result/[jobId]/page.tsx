@@ -14,14 +14,14 @@ type JobResponse = {
     levelLabel: string;
     status: string;
     progress: { step: string; attempt: number; maxAttempts: number };
-    result?: {
-      simplifiedText: string;
+    result: {
+      simplifiedText: string | null;
       readability: {
-        metric: string;
-        score: number;
-        targetMin: number;
-        targetMax: number;
-        inRange: boolean;
+        metric: string | null;
+        score: number | null;
+        targetMin: number | null;
+        targetMax: number | null;
+        inRange: boolean | null;
         attemptCount: number;
       };
       factCheck: {
@@ -45,7 +45,7 @@ type JobResponse = {
   }>;
 };
 
-type LevelResult = NonNullable<JobResponse["levels"][number]["result"]>;
+type LevelResult = JobResponse["levels"][number]["result"];
 
 function highlightedText(text: string, phrases: LevelResult["keyPhrases"]) {
   const ordered = [...phrases].sort((a, b) => a.charStart - b.charStart);
@@ -64,6 +64,16 @@ function highlightedText(text: string, phrases: LevelResult["keyPhrases"]) {
   }
   parts.push(text.slice(cursor));
   return parts;
+}
+
+function LoadingRows({ rows = 3 }: { rows?: number }) {
+  return (
+    <div className="space-y-2" aria-label="Loading">
+      {Array.from({ length: rows }, (_, index) => (
+        <div key={index} className={`h-3 animate-pulse rounded bg-stone-200 ${index === rows - 1 ? "w-2/3" : "w-full"}`} />
+      ))}
+    </div>
+  );
 }
 
 export default function ResultPage() {
@@ -142,11 +152,11 @@ export default function ResultPage() {
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,11fr)_minmax(360px,9fr)]">
           <article className="min-h-[540px] rounded border border-stone-300 bg-white p-5 text-lg leading-8">
-            {selectedLevel.result ? highlightedText(selectedLevel.result.simplifiedText, selectedLevel.result.keyPhrases) : (
+            {selectedLevel.result.simplifiedText ? highlightedText(selectedLevel.result.simplifiedText, selectedLevel.result.keyPhrases) : (
               <div className="text-stone-600">
                 {selectedLevel.status === "failed"
                   ? `This level failed after ${selectedLevel.progress.attempt}/${selectedLevel.progress.maxAttempts} verification attempts.`
-                  : `${selectedLevel.progress.step} in progress, attempt ${selectedLevel.progress.attempt}/${selectedLevel.progress.maxAttempts}`}
+                  : <><span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-stone-300 border-t-stone-700" />{selectedLevel.progress.step} in progress, attempt {selectedLevel.progress.attempt}/{selectedLevel.progress.maxAttempts}</>}
               </div>
             )}
           </article>
@@ -154,20 +164,21 @@ export default function ResultPage() {
           <aside className="space-y-4">
             <section className="rounded border border-stone-300 bg-white p-4">
               <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">Readability</h2>
-              {selectedLevel.result ? (
+              {selectedLevel.result.readability.score !== null ? (
                 <p className="text-sm">
                   {selectedLevel.result.readability.metric} {selectedLevel.result.readability.score?.toFixed(2)}{" "}
                   {selectedLevel.result.readability.inRange ? "in range" : "near match"} (target {selectedLevel.result.readability.targetMin}-
                   {selectedLevel.result.readability.targetMax}, {selectedLevel.result.readability.attemptCount} attempts)
                 </p>
               ) : (
-                <p className="text-sm text-stone-600">Waiting for deterministic verification.</p>
+                <LoadingRows rows={2} />
               )}
             </section>
 
-            {selectedLevel.result?.factCheck ? (
-              <section className="rounded border border-stone-300 bg-white p-4">
-                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">Fact consistency</h2>
+            <section className="rounded border border-stone-300 bg-white p-4">
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">Fact consistency</h2>
+              {selectedLevel.result.factCheck ? (
+                <>
                 <p className="mb-3 text-sm">
                   Retained {selectedLevel.result.factCheck.retained} / Simplified {selectedLevel.result.factCheck.simplified} / Lost{" "}
                   {selectedLevel.result.factCheck.lost}
@@ -179,12 +190,13 @@ export default function ResultPage() {
                     </li>
                   ))}
                 </ul>
-              </section>
-            ) : null}
+                </>
+              ) : <LoadingRows rows={4} />}
+            </section>
 
-            {selectedLevel.result ? (
-              <section className="rounded border border-stone-300 bg-white p-4">
-                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">Key phrases</h2>
+            <section className="rounded border border-stone-300 bg-white p-4">
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">Key phrases</h2>
+              {selectedLevel.result.keyPhrases.length > 0 ? (
                 <div className="space-y-3">
                   {selectedLevel.result.keyPhrases.map((phrase) => (
                     <div key={phrase.id} className="text-sm">
@@ -193,12 +205,12 @@ export default function ResultPage() {
                     </div>
                   ))}
                 </div>
-              </section>
-            ) : null}
+              ) : <LoadingRows rows={3} />}
+            </section>
 
-            {selectedLevel.result ? (
-              <section className="rounded border border-stone-300 bg-white p-4">
-                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">Questions</h2>
+            <section className="rounded border border-stone-300 bg-white p-4">
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">Questions</h2>
+              {selectedLevel.result.questions.length > 0 ? (
                 <ol className="space-y-3 text-sm">
                   {selectedLevel.result.questions.map((question) => (
                     <li key={question.id}>
@@ -207,8 +219,8 @@ export default function ResultPage() {
                     </li>
                   ))}
                 </ol>
-              </section>
-            ) : null}
+              ) : <LoadingRows rows={3} />}
+            </section>
           </aside>
         </div>
       </section>

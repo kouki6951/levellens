@@ -161,3 +161,11 @@
 - **レスポンシブ**: デスクトップ優先（教師の利用シーン＋デモ動画が PC のため）。モバイルは崩れない程度で可。
 - **エラー共通**: API 失敗はトースト＋リトライボタン。ジョブが `failed` の場合は S2 に失敗レベルのみ再実行ボタンを表示。
 - **アクセシビリティ**: ハイライトは色＋下線の併用（色覚多様性対応）。教育系プロダクトとして審査の Design 項目で言及する価値あり。
+
+### S2 progressive card rendering (all languages)
+
+- This behavior applies equally to EN, ES, and JA. It is not language-specific.
+- Render the text area, readability, fact consistency, key phrases, and questions cards immediately after the job is created.
+- Poll every 2 seconds. Replace each card's skeleton/loading indicator as soon as its corresponding data is persisted; do not wait for the whole level to reach `completed`.
+- Persisted simplified text and deterministic readability may appear during `verifying`; fact consistency may appear during `key_phrases`; key phrases may appear during `questions`.
+- The active stage remains visible in the selected level tab and text area. Terminal job states stop polling.

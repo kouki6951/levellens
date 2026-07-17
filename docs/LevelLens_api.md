@@ -232,3 +232,15 @@
 | OPENAI_API_KEY | GPT-5.6 呼び出し |
 | DATABASE_URL | Postgres 接続 |
 | MAX_VERIFY_ATTEMPTS | 検証ループ上限（既定 3） |
+| OPENAI_TIMEOUT_MS | One OpenAI request timeout in milliseconds (default 45000) |
+
+### Progressive result contract (all languages)
+
+`GET /api/jobs/[id]` always returns a `result` object for every level, including levels that are still processing. Fields become available independently as the pipeline persists them:
+
+- `simplifiedText` is `null` until the first deterministic verification result is saved.
+- `readability.score` is `null` until a score is saved; target values and attempt count are returned throughout processing.
+- `factCheck` is `null` until fact checking is complete; `keyPhrases` and `questions` are empty arrays until their respective steps complete.
+- Level status values also include `key_phrases` and `questions` after `fact_checking`.
+
+Clients must render partial results and loading placeholders per card for EN, ES, and JA rather than waiting for a whole level to complete.
