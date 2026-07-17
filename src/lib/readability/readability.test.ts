@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { EnglishScorer } from "./en";
 import { countSpanishSyllables, SpanishScorer } from "./es";
 import { JapaneseScorer } from "./ja";
-import { NotImplementedError } from "./types";
+import { JAPANESE_FIXTURES, SPANISH_FIXTURES } from "./fixtures";
 
 describe("EnglishScorer", () => {
   const scorer = new EnglishScorer();
@@ -34,21 +34,31 @@ describe("SpanishScorer", () => {
   });
 
   it("computes Fernandez-Huerta bands for fixture texts", () => {
-    const easy = scorer.score("El sol calienta el agua. El agua sube al aire. Luego cae como lluvia.").score;
-    const middle = scorer.score("La evaporacion ocurre cuando el calor cambia el agua liquida en vapor que sube a la atmosfera.").score;
-    const hard = scorer.score(
-      "La fotosintesis transforma moleculas inorganicas mediante reacciones bioquimicas complejas que dependen de pigmentos especializados y energia solar.",
-    ).score;
+    const easy = scorer.score(SPANISH_FIXTURES.easy).score;
+    const middle = scorer.score(SPANISH_FIXTURES.middle).score;
+    const hard = scorer.score(SPANISH_FIXTURES.hard).score;
 
     expect(easy).toBeGreaterThanOrEqual(91);
-    expect(middle).toBeGreaterThanOrEqual(66);
-    expect(middle).toBeLessThan(91);
+    expect(middle).toBeGreaterThanOrEqual(70);
+    expect(middle).toBeLessThanOrEqual(90);
     expect(hard).toBeLessThan(middle);
   });
 });
 
 describe("JapaneseScorer", () => {
-  it("is a deliberate stub for day one", () => {
-    expect(() => new JapaneseScorer().score("これはテストです。")).toThrow(NotImplementedError);
+  const scorer = new JapaneseScorer();
+
+  it("estimates elementary grade bands from kanji difficulty and sentence length", () => {
+    const easy = scorer.score(JAPANESE_FIXTURES.easy);
+    const middle = scorer.score(JAPANESE_FIXTURES.middle);
+    const hard = scorer.score(JAPANESE_FIXTURES.hard);
+
+    expect(easy.score).toBeGreaterThanOrEqual(1.0);
+    expect(easy.score).toBeLessThanOrEqual(2.5);
+    expect(middle.score).toBeGreaterThanOrEqual(2.6);
+    expect(middle.score).toBeLessThanOrEqual(4.5);
+    expect(hard.score).toBeGreaterThanOrEqual(4.6);
+    expect(hard.details?.kanjiGrades?.環).toBe(7);
+    expect(hard.details?.averageSentenceLength).toBeGreaterThan(25);
   });
 });

@@ -79,8 +79,8 @@ export const LEVELS = [
     lang: "ja",
     label: "小1-2",
     metric: "ja_composite",
-    targetMin: 1,
-    targetMax: 2,
+    targetMin: 1.0,
+    targetMax: 2.5,
     style: {
       sentenceLength: "Use very short Japanese sentences.",
       vocabulary: "Use early elementary vocabulary and kana support where helpful.",
@@ -93,8 +93,8 @@ export const LEVELS = [
     lang: "ja",
     label: "小3-4",
     metric: "ja_composite",
-    targetMin: 3,
-    targetMax: 4,
+    targetMin: 2.6,
+    targetMax: 4.5,
     style: {
       sentenceLength: "Use short Japanese sentences.",
       vocabulary: "Use middle elementary vocabulary.",
@@ -107,8 +107,8 @@ export const LEVELS = [
     lang: "ja",
     label: "小5-6",
     metric: "ja_composite",
-    targetMin: 5,
-    targetMax: 6,
+    targetMin: 4.6,
+    targetMax: 6.5,
     style: {
       sentenceLength: "Use clear upper-elementary Japanese sentences.",
       vocabulary: "Use common academic words with short explanations.",
@@ -121,8 +121,9 @@ export const LEVELS = [
     lang: "ja",
     label: "JLPT N4-N3",
     metric: "ja_composite",
-    targetMin: 3,
-    targetMax: 4,
+    // Approximate grade-scale proxy; dedicated JLPT vocabulary checking is out of scope.
+    targetMin: 2.0,
+    targetMax: 3.5,
     style: {
       sentenceLength: "Use short learner-friendly Japanese sentences.",
       vocabulary: "Favor JLPT N4-N3 vocabulary and explain unavoidable terms.",
@@ -130,14 +131,14 @@ export const LEVELS = [
       structures: "Use standard polite or plain forms consistently.",
     },
   },
-  // TODO: calibrate ES ranges with representative classroom samples.
+  // Calibrated against the Spanish fixtures in readability/fixtures.ts.
   {
     code: "es_g2-3",
     lang: "es",
     label: "Grado 2-3",
     metric: "fernandez_huerta",
     targetMin: 91,
-    targetMax: 100,
+    targetMax: 105,
     style: {
       sentenceLength: "Use very short Spanish sentences, usually 8-10 words.",
       vocabulary: "Use common concrete words and explain academic terms.",
@@ -150,7 +151,7 @@ export const LEVELS = [
     lang: "es",
     label: "Grado 4-5",
     metric: "fernandez_huerta",
-    targetMin: 81,
+    targetMin: 70,
     targetMax: 90,
     style: {
       sentenceLength: "Use short Spanish sentences, usually 10-14 words.",
@@ -164,8 +165,8 @@ export const LEVELS = [
     lang: "es",
     label: "Grado 6-8",
     metric: "fernandez_huerta",
-    targetMin: 66,
-    targetMax: 80,
+    targetMin: 45,
+    targetMax: 70,
     style: {
       sentenceLength: "Use varied Spanish sentences, usually under 20 words.",
       vocabulary: "Keep important academic terms and define them naturally.",
@@ -178,7 +179,7 @@ export const LEVELS = [
     lang: "es",
     label: "CEFR A2-B1",
     metric: "fernandez_huerta",
-    targetMin: 76,
+    targetMin: 70,
     targetMax: 90,
     style: {
       sentenceLength: "Use direct Spanish sentences, usually 8-14 words.",

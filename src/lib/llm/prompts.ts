@@ -12,6 +12,7 @@ export function buildSimplifyPrompt(lang: SupportedLang, levelCode: string, sour
     `Vocabulary guidance: ${level.style.vocabulary}`,
     `Structures: ${level.style.structures}`,
     `Avoid: ${level.style.avoid.join(", ")}.`,
+    lang === "ja" ? "Write plain Japanese without furigana. Do not add ruby annotations or parenthetical readings." : "",
     "Preserve all important facts. Do not add new facts.",
     "Return a concise source title and the rewritten text only.",
     feedback ? `Machine verification feedback to fix: ${feedback}` : "",
@@ -66,6 +67,24 @@ export function buildQuestionsPrompt(
 }
 
 export function buildRevisionFeedback(scoreResult: ScoreResult, target: { targetMin: number; targetMax: number }) {
+  if (scoreResult.metric === "ja_composite") {
+    const maximumGrade = Math.floor(target.targetMax);
+    if (scoreResult.score < target.targetMin) {
+      return `現在の推定学年は ${scoreResult.score.toFixed(2)}、目標は ${target.targetMin.toFixed(1)}-${target.targetMax.toFixed(1)}です。内容を幼くしすぎず、対象学年で学ぶ漢字と説明語を無理のない範囲で保ってください。文の平均長は25字程度までにしてください。`;
+    }
+    const offending = Object.entries(scoreResult.details?.kanjiGrades ?? {})
+      .filter(([, grade]) => grade > maximumGrade)
+      .map(([character]) => character)
+      .slice(0, 8);
+    const kanjiFeedback = offending.length > 0
+      ? `「${offending.join("」「")}」は対象学年を超えています。ひらがなに開くか、やさしい言葉に置き換えてください。`
+      : "対象学年より難しい漢字を減らしてください。";
+    const sentenceFeedback = scoreResult.details?.averageSentenceLength && scoreResult.details.averageSentenceLength > 25
+      ? `文の平均長を25字以下にしてください（現在 ${scoreResult.details.averageSentenceLength}字）。`
+      : "短く直接的な文にしてください。";
+    return `現在の推定学年は ${scoreResult.score.toFixed(2)}、目標は ${target.targetMin.toFixed(1)}-${target.targetMax.toFixed(1)}です。${kanjiFeedback}${sentenceFeedback}`;
+  }
+
   const direction =
     scoreResult.score < target.targetMin
       ? "The text is too easy. Add modest sentence variety and keep necessary academic terms."

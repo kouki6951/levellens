@@ -3,6 +3,10 @@ import type { ReadabilityMetric, SupportedLang } from "@/lib/levels";
 export type ScoreResult = {
   metric: ReadabilityMetric;
   score: number;
+  details?: {
+    averageSentenceLength?: number;
+    kanjiGrades?: Record<string, number>;
+  };
 };
 
 export interface Scorer {
