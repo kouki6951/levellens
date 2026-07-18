@@ -26,8 +26,8 @@ function ShellContent({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-[#f7f7f4] text-stone-950">
       <header className="sticky top-0 z-20 border-b border-stone-300 bg-[#f7f7f4]/95 backdrop-blur">
         <div className="flex h-16 items-center justify-between px-5 lg:px-7">
-          <Link href="/" aria-label="LevelLens home" className="relative h-10 w-[180px] shrink-0 overflow-hidden" title="LevelLens">
-            <Image src="/images/levellens-logo.png" alt="LevelLens" width={180} height={102} priority className="absolute left-0 top-[-32px] w-[180px] max-w-none" />
+          <Link href="/" aria-label="LevelLens home" className="shrink-0" title="LevelLens">
+            <Image src="/images/levellens-logo.png" alt="LevelLens" width={180} height={41} priority className="h-auto w-[180px]" />
           </Link>
           <p className="hidden text-sm text-stone-600 lg:block">{t.tagline}</p>
           <div className="flex items-center gap-2">
