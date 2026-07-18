@@ -15,9 +15,9 @@ const SAMPLE_LANGUAGE_ORDER: SupportedLang[] = ["en", "es", "ja"];
 const DRAFT_STORAGE_KEY = "levellens-reuse-draft";
 
 const IMPORT_COPY = {
-  en: { paste: "Paste text", url: "Import URL", urlLabel: "Public article URL", fetch: "Fetch article", fetching: "Fetching article...", rights: "I confirm I may use this material for teaching.", review: "Review the extracted text before converting.", truncated: "The import was limited to the first 8,000 characters.", source: "Imported from" },
-  es: { paste: "Pegar texto", url: "Importar URL", urlLabel: "URL de artículo público", fetch: "Obtener artículo", fetching: "Obteniendo artículo...", rights: "Confirmo que puedo usar este material para la enseñanza.", review: "Revisa el texto extraído antes de convertirlo.", truncated: "La importación se limitó a los primeros 8.000 caracteres.", source: "Importado de" },
-  ja: { paste: "テキストを貼り付け", url: "URLから取り込む", urlLabel: "公開記事のURL", fetch: "記事を取得", fetching: "記事を取得中...", rights: "この教材を教育目的で利用できることを確認しました。", review: "変換する前に抽出された本文を確認してください。", truncated: "取得できる本文は先頭8,000文字までです。", source: "取得元" },
+  en: { paste: "Paste text", url: "Import URL", urlLabel: "Public article URL", fetch: "Fetch article", fetching: "Fetching article...", rights: "I confirm I may use this material for teaching.", review: "Review the extracted text before converting.", truncated: "The import was limited to the first 8,000 characters.", source: "Imported from", examples: "Example materials", showExamples: "Show examples", hideExamples: "Hide examples", exampleHint: "Original sample materials for trying LevelLens." },
+  es: { paste: "Pegar texto", url: "Importar URL", urlLabel: "URL de artículo público", fetch: "Obtener artículo", fetching: "Obteniendo artículo...", rights: "Confirmo que puedo usar este material para la enseñanza.", review: "Revisa el texto extraído antes de convertirlo.", truncated: "La importación se limitó a los primeros 8.000 caracteres.", source: "Importado de", examples: "Materiales de ejemplo", showExamples: "Mostrar ejemplos", hideExamples: "Ocultar ejemplos", exampleHint: "Materiales originales para probar LevelLens." },
+  ja: { paste: "テキストを貼り付け", url: "URLから取り込む", urlLabel: "公開記事のURL", fetch: "記事を取得", fetching: "記事を取得中...", rights: "この教材を教育目的で利用できることを確認しました。", review: "変換する前に抽出された本文を確認してください。", truncated: "取得できる本文は先頭8,000文字までです。", source: "取得元", examples: "例文", showExamples: "例文を表示", hideExamples: "例文を隠す", exampleHint: "LevelLens を試すためのオリジナル教材です。" },
 } as const;
 
 type SourceCitation = { url: string; title: string; domain: string; accessedAt: string };
@@ -25,7 +25,7 @@ type SourceCitation = { url: string; title: string; domain: string; accessedAt: 
 export default function Home() {
   const router = useRouter();
   const { locale, t } = useLocale();
-  const [sourceText, setSourceText] = useState(SAMPLES.en.text);
+  const [sourceText, setSourceText] = useState("");
   const [lang, setLang] = useState<SupportedLang>("en");
   const [confidence, setConfidence] = useState(0.98);
   const [manualLanguage, setManualLanguage] = useState(false);
@@ -39,6 +39,7 @@ export default function Home() {
   const [importError, setImportError] = useState<string | null>(null);
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [wasTruncated, setWasTruncated] = useState(false);
+  const [examplesOpen, setExamplesOpen] = useState(false);
   const levels = useMemo(() => levelsForLang(lang), [lang]);
   const importCopy = IMPORT_COPY[locale];
 
@@ -169,16 +170,16 @@ export default function Home() {
               {sourceCitation ? <p className="text-sm text-stone-600">{importCopy.source}: <a className="underline" href={sourceCitation.url} target="_blank" rel="noreferrer">{sourceCitation.title || sourceCitation.domain}</a>. {importCopy.review}</p> : null}
               {wasTruncated ? <p className="text-sm text-amber-800">{importCopy.truncated}</p> : null}
             </div> : null}
-            <div className="flex flex-wrap gap-2">
-              {SAMPLE_LANGUAGE_ORDER.map((code) => {
+            <section className="border-b border-stone-200 pb-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-stone-700">{importCopy.examples}</p>
+                <button type="button" aria-expanded={examplesOpen} onClick={() => setExamplesOpen((current) => !current)} className="rounded border border-stone-300 bg-white px-3 py-2 text-xs font-medium">{examplesOpen ? importCopy.hideExamples : importCopy.showExamples}</button>
+              </div>
+              {examplesOpen ? <div className="mt-3"><p className="mb-2 text-xs text-stone-600">{importCopy.exampleHint}</p><div className="flex flex-wrap gap-2">{SAMPLE_LANGUAGE_ORDER.map((code) => {
                 const sample = SAMPLES[code];
-                return (
-                <button key={code} type="button" onClick={() => { setSourceText(sample.text); setSourceCitation(null); setWasTruncated(false); changeLang(code, true); }} className="rounded border border-stone-300 bg-white px-3 py-2 text-xs">
-                  {sample.label}
-                </button>
-                );
-              })}
-            </div>
+                return <button key={code} type="button" onClick={() => { setSourceText(sample.text); setSourceCitation(null); setWasTruncated(false); changeLang(code, true); }} className="rounded border border-stone-300 bg-white px-3 py-2 text-xs">{sample.label}</button>;
+              })}</div></div> : null}
+            </section>
             <textarea
               id="source"
               className="min-h-[520px] flex-1 resize-none rounded border border-stone-300 bg-white p-4 text-base leading-7 outline-none focus:border-stone-700"

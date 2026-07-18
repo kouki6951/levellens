@@ -208,6 +208,12 @@
 - The page explains the teacher workflow in eight sections: adding material, choosing levels, reviewing results, using Language focus, preparing classroom materials, returning to History, understanding quality checks, and resolving results that need attention.
 - The guide follows the existing UI locale selection and does not change the teaching-material language or generated content language.
 
+### Empty New Material default and examples
+
+- New Material opens with an empty teaching-material textarea. No sample is prefilled.
+- Original sample materials are labeled as examples and kept inside a collapsed section by default.
+- Expanding the section shows EN, ES, and JA samples in that order; choosing one fills the textarea and applies its language-level preset.
+
 ### PDF answer key readability
 
 - The teacher-copy answer key groups answers by level and shows the question text, the letter plus full correct choice, and its explanation.
