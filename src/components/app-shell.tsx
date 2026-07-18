@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { LocaleProvider, useLocale } from "@/components/locale-provider";
 import { UI_LOCALE_NAMES, type UiLocale } from "@/lib/ui-i18n";
+import { GUIDE_CONTENT } from "@/lib/guide-content";
 
 function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -20,6 +21,7 @@ function ShellContent({ children }: { children: React.ReactNode }) {
   const navigation = [
     { href: "/", label: t.newMaterial },
     { href: "/history", label: t.history },
+    { href: "/guide", label: GUIDE_CONTENT[locale].navLabel },
   ];
 
   return (

@@ -202,6 +202,12 @@
 - The regeneration action belongs in the simplified-text panel header next to the selected level label.
 - Full-page data retrieval states in Result, Questions, Export, and History use an animated spinner with the localized loading label rather than text alone.
 
+### Guide page (`/guide`)
+
+- Workspace navigation includes a Guide link, localized as `Guide` / `Guía` / `使い方`.
+- The page explains the teacher workflow in eight sections: adding material, choosing levels, reviewing results, using Language focus, preparing classroom materials, returning to History, understanding quality checks, and resolving results that need attention.
+- The guide follows the existing UI locale selection and does not change the teaching-material language or generated content language.
+
 ### Language focus
 
 - The former Key phrases panel is labeled `Language focus` / `Enfoque lingüístico` / `言語のポイント` according to the UI locale.

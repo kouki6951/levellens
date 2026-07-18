@@ -30,3 +30,4 @@
 - Ordered all Result API level arrays by the level master so tabs render low-to-high, independent of the order in which levels were selected. Delivery commit: `bd8ad49`.
 - Reoriented the existing key-phrase extraction call toward grammar and sentence-pattern instruction, relabeled it as Language focus across UI/PDF/questions, and added prompt coverage. Delivery commit: `79bd5c8`.
 - Replaced text-only page loading states with an accessible animated loading indicator across Result, Questions, Export, and History. Delivery commit: `c10e2c9`.
+- Added a three-language teacher guide page and Guide navigation link. Delivery commit: pending.
