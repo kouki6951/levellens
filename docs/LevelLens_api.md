@@ -167,7 +167,7 @@
 
 **Response 200**
 ```json
-[{ "id": "...", "sourceTitle": "The Water Cycle", "lang": "en", "status": "completed", "createdAt": "...", "completedLevels": 2, "levelCount": 2 }]
+[{ "id": "...", "sourceTitle": "The Water Cycle", "lang": "en", "status": "completed", "createdAt": "...", "completedLevels": 2, "levelCount": 2, "levelCodes": ["en_g2-3", "en_g4-5"] }]
 ```
 
 - `estimatedLexileBand` は EN/ES かつ P2 実装時のみ含める（換算表による参考値。null 許容）。

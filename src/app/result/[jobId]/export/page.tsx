@@ -44,6 +44,14 @@ export default function ExportPage() {
     setSelected((current) => current.includes(code) ? current.filter((item) => item !== code) : [...current, code]);
   }
 
+  function selectStudentCopy() {
+    setInclude({ keyPhraseBox: true, questions: true, answerPage: false });
+  }
+
+  function selectTeacherCopy() {
+    setInclude({ keyPhraseBox: true, questions: true, answerPage: true });
+  }
+
   async function download() {
     if (levels.length === 0) return;
     setDownloading(true);
@@ -81,6 +89,10 @@ export default function ExportPage() {
               <input type="checkbox" checked={selected.includes(level.levelCode)} disabled={level.status !== "completed"} onChange={() => toggleLevel(level.levelCode)} />
               <span>{level.levelLabel} {level.status !== "completed" ? t.notReady : ""}</span>
             </label>)}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button type="button" onClick={selectStudentCopy} className={`h-10 rounded border text-sm ${!include.answerPage ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white"}`}>{t.studentCopy}</button>
+            <button type="button" onClick={selectTeacherCopy} className={`h-10 rounded border text-sm ${include.answerPage ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white"}`}>{t.teacherCopy}</button>
           </div>
           <div className="space-y-2">
             <p className="text-sm font-semibold">{t.include}</p>

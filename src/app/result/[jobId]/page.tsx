@@ -205,7 +205,7 @@ export default function ResultPage() {
           </section>
           <section className="rounded border border-stone-300 bg-white p-4">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.factConsistency}</h2>
-            {selectedLevel.result.factCheck ? <><p className="mb-3 text-sm">{t.retained} {selectedLevel.result.factCheck.retained} / {t.simplified} {selectedLevel.result.factCheck.simplified} / {t.lost} {selectedLevel.result.factCheck.lost}</p><ul className="space-y-2 text-sm">{selectedLevel.result.factCheck.items.slice(0, 3).map((item, index) => <li key={`${item.fact}-${index}`} className="border-t border-stone-200 pt-2"><span className="font-medium">{item.status}</span>: {item.fact}</li>)}</ul></> : <LoadingRows rows={3} />}
+            {selectedLevel.result.factCheck ? <><p className="text-sm">{t.retained} {selectedLevel.result.factCheck.retained} / {t.simplified} {selectedLevel.result.factCheck.simplified} / {t.lost} {selectedLevel.result.factCheck.lost}</p><details className="mt-3 text-sm"><summary className="cursor-pointer font-medium text-stone-700">{t.showDetails}</summary><ul className="mt-3 space-y-2">{selectedLevel.result.factCheck.items.slice(0, 5).map((item, index) => <li key={`${item.fact}-${index}`} className="border-t border-stone-200 pt-2"><span className="font-medium">{item.status}</span>: {item.fact}</li>)}</ul></details></> : <LoadingRows rows={3} />}
           </section>
           <section className="rounded border border-stone-300 bg-white p-4">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.keyPhrases}</h2>

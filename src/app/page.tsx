@@ -12,6 +12,7 @@ const SAMPLES: Record<SupportedLang, { label: string; text: string }> = {
 };
 
 const SAMPLE_LANGUAGE_ORDER: SupportedLang[] = ["en", "es", "ja"];
+const DRAFT_STORAGE_KEY = "levellens-reuse-draft";
 
 export default function Home() {
   const router = useRouter();
@@ -24,6 +25,29 @@ export default function Home() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const levels = useMemo(() => levelsForLang(lang), [lang]);
+
+  useEffect(() => {
+    const rawDraft = window.sessionStorage.getItem(DRAFT_STORAGE_KEY);
+    if (!rawDraft) return;
+    window.sessionStorage.removeItem(DRAFT_STORAGE_KEY);
+    try {
+      const draft = JSON.parse(rawDraft) as { sourceText?: unknown; lang?: unknown; targetLevels?: unknown };
+      if (typeof draft.sourceText !== "string" || !["en", "es", "ja"].includes(String(draft.lang))) return;
+      const draftSourceText = draft.sourceText;
+      const draftLang = draft.lang as SupportedLang;
+      const allowedLevels = new Set<string>(levelsForLang(draftLang).map((level) => level.code));
+      const targetLevels: string[] = Array.isArray(draft.targetLevels) ? draft.targetLevels.filter((level): level is string => typeof level === "string" && allowedLevels.has(level)).slice(0, 4) : [];
+      const handle = window.setTimeout(() => {
+        setSourceText(draftSourceText);
+        setLang(draftLang);
+        setSelected(targetLevels.length > 0 ? targetLevels : levelsForLang(draftLang).slice(0, 2).map((level) => level.code));
+        setManualLanguage(true);
+      }, 0);
+      return () => window.clearTimeout(handle);
+    } catch {
+      return;
+    }
+  }, []);
 
   function changeLang(nextLang: SupportedLang, manual = false) {
     setLang(nextLang);

@@ -4,7 +4,7 @@ export async function GET() {
   const jobs = await prisma.job.findMany({
     orderBy: { createdAt: "desc" },
     take: 30,
-    include: { levelVersions: { select: { status: true } } },
+    include: { levelVersions: { select: { status: true, levelCode: true } } },
   });
   return Response.json(jobs.map((job) => ({
     id: job.id,
@@ -15,5 +15,6 @@ export async function GET() {
     createdAt: job.createdAt.toISOString(),
     completedLevels: job.levelVersions.filter((level) => level.status === "completed").length,
     levelCount: job.levelVersions.length,
+    levelCodes: job.levelVersions.map((level) => level.levelCode),
   })));
 }
