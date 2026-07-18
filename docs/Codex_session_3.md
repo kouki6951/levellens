@@ -34,3 +34,9 @@
 - Improved the teacher-copy PDF answer key with grouped question text, full correct choices, explanations, and answer-format coverage. Delivery commit: `2203cf5`.
 - Fixed history reuse navigation and standardized interactive button cursors. Delivery commit: `04be594`.
 - Changed New Material to start empty and moved sample materials into a localized collapsed examples section. Delivery commit: `fe2c0df`.
+
+## Follow-up: UI principle audit implementation (2026-07-18)
+
+- Applied the speed-neutral UI improvements identified against Figma's hierarchy, progressive-disclosure, consistency, accessibility, proximity, and alignment principles.
+- Added neutral first-visit source-length guidance, a dedicated mobile navigation row, visible keyboard focus handling, reduced-motion support, clearer Result action hierarchy, and a localized Guide quick start before the detailed instructions.
+- Updated `LevelLens_ui.md` with the responsive and accessibility behavior. Delivery commit: `bbed836`.
