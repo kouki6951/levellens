@@ -209,7 +209,7 @@ export default function ResultPage() {
           </section>
           <section className="rounded border border-stone-300 bg-white p-4">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.keyPhrases}</h2>
-            {selectedLevel.result.keyPhrases.length > 0 ? <div className="space-y-3">{selectedLevel.result.keyPhrases.map((phrase) => <div key={phrase.id} className="cursor-pointer text-sm" onMouseEnter={() => focusKeyPhrase(phrase.id)}><p className="font-medium">{phrase.phrase}</p><p className="text-stone-600">{phrase.gloss}</p></div>)}</div> : <LoadingRows rows={3} />}
+            {selectedLevel.result.keyPhrases.length > 0 ? <div className="space-y-3">{selectedLevel.result.keyPhrases.map((phrase) => <button key={phrase.id} type="button" className="block w-full cursor-pointer text-left text-sm" onClick={() => focusKeyPhrase(phrase.id)}><span className="block font-medium">{phrase.phrase}</span><span className="block text-stone-600">{phrase.gloss}</span></button>)}</div> : <LoadingRows rows={3} />}
           </section>
           <section className="rounded border border-stone-300 bg-white p-4">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.questionLabel}</h2>
