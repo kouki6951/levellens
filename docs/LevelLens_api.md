@@ -96,7 +96,7 @@
 **実行環境の注意**: Vercel の関数タイムアウト対策として、パイプラインは `waitUntil` / バックグラウンド関数（もしくは Inngest 等）で実行し、simplify 自体は即 202 を返す。1 レベルあたり想定 20–60 秒。
 
 **LLM 呼び出し設計**
-- (1)(3)(4)(5) は Structured Outputs (JSON Schema) で受け、パース失敗によるリトライを排除する。
+- (1)(3)(4)(5) は Structured Outputs (JSON Schema) で受け、パース失敗によるリトライを排除する。選択式の設問はスキーマで問題数と選択肢数を固定し、常に4択にする。
 - (2) の採点は EN が `text-readability` による FKGL、ES が純粋関数の Fernández-Huerta、JA が教育漢字・文長ベースの複合指標。**LLM に自己採点させない**（検証の独立性が製品の核）。
 - 修正指示の例: `"Current FKGL is 3.9 (target 2.5–3.5). Shorten sentences (avg ≤ 10 words) and replace multi-syllable words: 'evaporation' → 'turns into vapor'..."` のように、測定値から機械生成した具体的指示を与える。
 

@@ -1,7 +1,7 @@
 import type { SupportedLang } from "@/lib/levels";
 import { structuredOutput } from "./client";
 import { buildFactCheckPrompt, buildKeyPhrasePrompt, buildQuestionsPrompt, buildSimplifyPrompt } from "./prompts";
-import { factCheckSchema, keyPhraseSchema, questionsSchema, simplifySchema } from "./schemas";
+import { factCheckSchema, keyPhraseSchema, questionsSchemaFor, simplifySchema } from "./schemas";
 import type { FactCheckOutput, KeyPhraseOutput, QuestionsOutput, SimplifyOutput } from "./types";
 
 export async function simplifyText(lang: SupportedLang, levelCode: string, sourceText: string, feedback?: string) {
@@ -26,7 +26,7 @@ export async function generateQuestions(
 ) {
   return structuredOutput<QuestionsOutput>(
     "comprehension_questions",
-    questionsSchema,
+    questionsSchemaFor(questionType, questionCount),
     buildQuestionsPrompt(lang, levelCode, simplifiedText, keyPhrases, questionCount, questionType),
   );
 }

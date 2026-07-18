@@ -213,7 +213,7 @@ export default function ResultPage() {
           </section>
           <section className="rounded border border-stone-300 bg-white p-4">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.questionLabel}</h2>
-            {selectedLevel.result.questions.length > 0 ? <ol className="space-y-3 text-sm">{selectedLevel.result.questions.map((question) => <li key={question.id}><p className="font-medium">{question.questionText}</p>{question.choices ? <p className="text-stone-600">{question.choices.join(" / ")}</p> : null}</li>)}</ol> : <LoadingRows rows={3} />}
+            {selectedLevel.result.questions.length > 0 ? <ol className="space-y-4 text-sm">{selectedLevel.result.questions.map((question) => <li key={question.id} className="border-t border-stone-200 pt-3 first:border-t-0 first:pt-0"><p className="mb-2 font-medium">{question.orderIndex}. {question.questionText}</p>{question.choices ? <ol className="space-y-1 text-stone-600">{question.choices.map((choice, index) => <li key={index}><span className="mr-1 font-medium text-stone-900">{String.fromCharCode(65 + index)}.</span>{choice}</li>)}</ol> : null}</li>)}</ol> : <LoadingRows rows={3} />}
           </section>
         </div>
       </section>

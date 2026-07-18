@@ -56,27 +56,34 @@ export const keyPhraseSchema = {
   },
 } as const;
 
-export const questionsSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["questions"],
-  properties: {
-    questions: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["orderIndex", "type", "questionText", "choices", "answer", "explanation", "keyPhrasePosition"],
-        properties: {
-          orderIndex: { type: "integer", minimum: 1 },
-          type: { type: "string", enum: ["multiple_choice", "open_ended"] },
-          questionText: { type: "string" },
-          choices: { type: "array", items: { type: "string" } },
-          answer: { type: "string" },
-          explanation: { type: "string" },
-          keyPhrasePosition: { anyOf: [{ type: "integer", minimum: 1, maximum: 3 }, { type: "null" }] },
+export function questionsSchemaFor(questionType: "multiple_choice" | "open_ended", questionCount: number) {
+  const isMultipleChoice = questionType === "multiple_choice";
+  return {
+    type: "object",
+    additionalProperties: false,
+    required: ["questions"],
+    properties: {
+      questions: {
+        type: "array",
+        minItems: questionCount,
+        maxItems: questionCount,
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["orderIndex", "type", "questionText", "choices", "answer", "explanation", "keyPhrasePosition"],
+          properties: {
+            orderIndex: { type: "integer", minimum: 1, maximum: questionCount },
+            type: { type: "string", enum: [questionType] },
+            questionText: { type: "string" },
+            choices: isMultipleChoice
+              ? { type: "array", minItems: 4, maxItems: 4, items: { type: "string" } }
+              : { type: "array", minItems: 0, maxItems: 0, items: { type: "string" } },
+            answer: { type: "string" },
+            explanation: { type: "string" },
+            keyPhrasePosition: { anyOf: [{ type: "integer", minimum: 1, maximum: 3 }, { type: "null" }] },
+          },
         },
       },
     },
-  },
-} as const;
+  } as const;
+}
