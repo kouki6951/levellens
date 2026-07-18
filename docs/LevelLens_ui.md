@@ -207,6 +207,14 @@
 - Workspace navigation includes a Guide link, localized as `Guide` / `Guía` / `使い方`.
 - The page explains the teacher workflow in eight sections: adding material, choosing levels, reviewing results, using Language focus, preparing classroom materials, returning to History, understanding quality checks, and resolving results that need attention.
 - The guide follows the existing UI locale selection and does not change the teaching-material language or generated content language.
+- A localized three-step quick start precedes the detailed eight-step guide. The detailed guide remains available for classroom workflow and recovery instructions.
+
+### Accessibility and responsive behavior
+
+- Interactive controls expose a consistent visible keyboard focus indicator. Motion-based loading and transitions respect `prefers-reduced-motion`.
+- On mobile, the application header places the interface-language selector on the first row and the three workspace links on a dedicated fixed grid row. This prevents localized navigation labels from competing with the logo and language selector.
+- New Material shows the 200-character requirement as neutral guidance before the source field has been visited. It becomes an error state after the field is visited and remains below the minimum.
+- On Result, Questions and Export are related secondary actions; New material is visually separated as the primary next-workflow action.
 
 ### Empty New Material default and examples
 

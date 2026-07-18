@@ -160,16 +160,18 @@ export default function ResultPage() {
   return (
     <main className="min-h-screen bg-[#f7f7f4] text-stone-950">
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-6 py-6">
-        <header className="flex items-center justify-between border-b border-stone-300 pb-4">
+        <header className="flex flex-col gap-4 border-b border-stone-300 pb-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-sm text-stone-600">{job.lang.toUpperCase()} {t.material.toLowerCase()}</p>
             <h1 className="text-2xl font-semibold">{displayTitle}</h1>
             {job.source ? <a className="mt-1 block max-w-xl truncate text-sm text-stone-600 underline" href={job.source.url} target="_blank" rel="noreferrer">Source: {job.source.domain || job.source.url}</a> : null}
           </div>
-          <div className="flex gap-2">
-            <Link href={`/result/${jobId}/questions`} className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">{t.questions}</Link>
-            <Link href={`/result/${jobId}/export`} className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">{t.export}</Link>
-            <Link href="/" className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">{t.newMaterial}</Link>
+          <div className="flex flex-wrap items-center gap-2" aria-label="Result actions">
+            <div className="flex gap-2">
+              <Link href={`/result/${jobId}/questions`} className="rounded border border-stone-300 bg-white px-3 py-2 text-sm hover:bg-stone-100">{t.questions}</Link>
+              <Link href={`/result/${jobId}/export`} className="rounded border border-stone-300 bg-white px-3 py-2 text-sm hover:bg-stone-100">{t.export}</Link>
+            </div>
+            <Link href="/" className="rounded bg-stone-950 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800">{t.newMaterial}</Link>
           </div>
         </header>
 

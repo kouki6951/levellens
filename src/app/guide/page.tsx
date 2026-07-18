@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useLocale } from "@/components/locale-provider";
 import { GUIDE_CONTENT } from "@/lib/guide-content";
+import { GUIDE_QUICK_START } from "@/lib/guide-quick-start";
 
 export default function GuidePage() {
   const { locale } = useLocale();
   const guide = GUIDE_CONTENT[locale];
+  const quickStart = GUIDE_QUICK_START[locale];
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-7 lg:px-8">
@@ -17,6 +19,13 @@ export default function GuidePage() {
           <Link href="/" className="rounded bg-stone-950 px-3 py-2 text-sm font-medium text-white">{guide.startLabel}</Link>
         </div>
       </header>
+
+      <section aria-labelledby="quick-start-title" className="mt-6 border border-stone-300 bg-white p-5">
+        <div className="max-w-2xl"><h2 id="quick-start-title" className="text-base font-semibold">{quickStart.title}</h2><p className="mt-1 text-sm text-stone-600">{quickStart.body}</p></div>
+        <ol className="mt-5 grid gap-3 md:grid-cols-3">
+          {quickStart.steps.map((step, index) => <li key={step} className="border-l-2 border-emerald-700 pl-3 text-sm leading-6 text-stone-700"><span className="mr-2 font-semibold text-emerald-800">{index + 1}</span>{step}</li>)}
+        </ol>
+      </section>
 
       <div className="mt-7 grid gap-8 lg:grid-cols-[170px_minmax(0,1fr)]">
         <nav aria-label={guide.title} className="hidden lg:block">

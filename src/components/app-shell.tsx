@@ -32,19 +32,19 @@ function ShellContent({ children }: { children: React.ReactNode }) {
             <Image src="/images/levellens-header-logo.png" alt="LevelLens" width={159} height={36} priority className="h-9 w-auto" />
           </Link>
           <p className="hidden text-sm text-stone-600 lg:block">{t.tagline}</p>
-          <div className="flex items-center gap-2">
           <select aria-label="Interface language" value={locale} onChange={(event) => setLocale(event.target.value as UiLocale)} className="h-9 rounded border border-stone-300 bg-white px-2 text-sm">
             {(Object.keys(UI_LOCALE_NAMES) as UiLocale[]).map((item) => <option key={item} value={item}>{UI_LOCALE_NAMES[item]}</option>)}
           </select>
-          <nav aria-label="Primary navigation" className="flex gap-1 lg:hidden">
+        </div>
+        <nav aria-label="Primary navigation" className="border-t border-stone-200 px-3 py-2 lg:hidden">
+          <div className="grid grid-cols-3 gap-1">
             {navigation.map((item) => (
-              <Link key={item.href} href={item.href} className={`rounded px-3 py-2 text-sm ${isActive(pathname, item.href) ? "bg-stone-950 text-white" : "text-stone-700"}`}>
+              <Link key={item.href} href={item.href} aria-current={isActive(pathname, item.href) ? "page" : undefined} className={`truncate rounded px-3 py-2 text-center text-sm ${isActive(pathname, item.href) ? "bg-stone-950 text-white" : "text-stone-700 hover:bg-stone-200"}`}>
                 {item.label}
               </Link>
             ))}
-          </nav>
           </div>
-        </div>
+        </nav>
       </header>
       <div className="lg:grid lg:grid-cols-[220px_minmax(0,1fr)]">
         <aside className="hidden border-r border-stone-300 lg:block">
@@ -52,7 +52,7 @@ function ShellContent({ children }: { children: React.ReactNode }) {
             <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wide text-stone-500">{t.workspace}</p>
             <div className="space-y-1">
               {navigation.map((item) => (
-                <Link key={item.href} href={item.href} className={`block rounded px-3 py-2 text-sm font-medium ${isActive(pathname, item.href) ? "bg-stone-950 text-white" : "text-stone-700 hover:bg-stone-200"}`}>
+                <Link key={item.href} href={item.href} aria-current={isActive(pathname, item.href) ? "page" : undefined} className={`block rounded px-3 py-2 text-sm font-medium ${isActive(pathname, item.href) ? "bg-stone-950 text-white" : "text-stone-700 hover:bg-stone-200"}`}>
                   {item.label}
                 </Link>
               ))}

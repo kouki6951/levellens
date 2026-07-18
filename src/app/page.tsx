@@ -40,6 +40,7 @@ export default function Home() {
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [wasTruncated, setWasTruncated] = useState(false);
   const [examplesOpen, setExamplesOpen] = useState(false);
+  const [sourceTouched, setSourceTouched] = useState(false);
   const levels = useMemo(() => levelsForLang(lang), [lang]);
   const importCopy = IMPORT_COPY[locale];
 
@@ -133,6 +134,7 @@ export default function Home() {
   }
 
   const invalid = sourceText.length < 200 || sourceText.length > 8000 || selected.length === 0 || submitting;
+  const sourceLengthError = sourceText.length > 8000 || (sourceTouched && sourceText.length < 200);
 
   return (
     <main>
@@ -153,7 +155,7 @@ export default function Home() {
               <label className="text-sm font-medium" htmlFor="source">
                 {t.teachingMaterial}
               </label>
-              <span className={`text-sm ${sourceText.length < 200 || sourceText.length > 8000 ? "text-red-700" : "text-stone-600"}`}>{sourceText.length} / 8000</span>
+              <span className={`text-sm ${sourceLengthError ? "text-red-700" : "text-stone-600"}`}>{sourceText.length} / 8000</span>
             </div>
             <div className="flex gap-2 border-b border-stone-200 pb-3">
               <button type="button" onClick={() => setInputMode("paste")} className={`rounded px-3 py-2 text-sm ${inputMode === "paste" ? "bg-stone-950 text-white" : "border border-stone-300 bg-white"}`}>{importCopy.paste}</button>
@@ -185,8 +187,10 @@ export default function Home() {
               className="min-h-[520px] flex-1 resize-none rounded border border-stone-300 bg-white p-4 text-base leading-7 outline-none focus:border-stone-700"
               value={sourceText}
               onChange={(event) => setSourceText(event.target.value)}
+              onBlur={() => setSourceTouched(true)}
+              aria-describedby="source-length-help"
             />
-            {sourceText.length < 200 ? <p className="text-sm text-red-700" aria-live="polite">{t.charactersNeeded(200 - sourceText.length)}</p> : null}
+            {sourceText.length < 200 ? <p id="source-length-help" className={`text-sm ${sourceLengthError ? "text-red-700" : "text-stone-600"}`} aria-live="polite">{t.charactersNeeded(200 - sourceText.length)}</p> : null}
           </section>
 
           <aside className="flex flex-col gap-6 border-l border-stone-300 pl-0 lg:pl-6">
