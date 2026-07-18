@@ -201,3 +201,10 @@ export function levelsForLang(lang: SupportedLang) {
 export function levelForCode(code: string): LevelSpec | undefined {
   return LEVELS.find((level) => level.code === code);
 }
+
+/** Keeps every UI/API representation in the language master's low-to-high order. */
+export function compareLevelCodes(left: string, right: string) {
+  const leftIndex = LEVELS.findIndex((level) => level.code === left);
+  const rightIndex = LEVELS.findIndex((level) => level.code === right);
+  return (leftIndex === -1 ? Number.MAX_SAFE_INTEGER : leftIndex) - (rightIndex === -1 ? Number.MAX_SAFE_INTEGER : rightIndex);
+}

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { apiError } from "@/lib/api/errors";
+import { compareLevelCodes } from "@/lib/levels";
 
 function progressFor(status: string, attempt: number) {
   const stepByStatus: Record<string, string> = {
@@ -40,7 +41,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     source: job.sourceUrl ? { url: job.sourceUrl, domain: job.sourceDomain, accessedAt: job.sourceAccessedAt?.toISOString() ?? null } : null,
     sourceText: job.sourceText,
     lang: job.lang,
-    levels: job.levelVersions.map((level) => ({
+    levels: [...job.levelVersions].sort((left, right) => compareLevelCodes(left.levelCode, right.levelCode)).map((level) => ({
       id: level.id,
       levelCode: level.levelCode,
       levelLabel: level.levelLabel,
