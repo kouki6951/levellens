@@ -22,7 +22,7 @@
 
 ## Follow-up: Result stability and JLPT recovery (2026-07-18)
 
-- Delivery commit: pending.
+- Delivery commits: `4077f00` (`Stabilize result titles and recover revisions`) and `0a076ea` (`Label legacy result titles by level`).
 - Moved generated titles from the shared job record to `level_versions.generated_title`, keeping imported source titles stable while level tabs are selected.
 - Kept the selected result tab stable during polling, made in-progress analysis explicit, and moved regeneration to the simplified-text header.
 - Made a post-draft readability revision resilient to transient Structured Outputs failures by retaining the last scored draft as a near-match.
