@@ -172,13 +172,14 @@ export default function ResultPage() {
           </div>
         </header>
 
-        <nav className="flex flex-wrap gap-2">
+        <nav className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
           {job.levels.map((level) => (
             <button
               key={level.levelCode}
               type="button"
               onClick={() => setSelectedCode(level.levelCode)}
-              className={`rounded border px-3 py-2 text-sm ${selectedLevel.levelCode === level.levelCode ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white"}`}
+              title={`${level.levelLabel} - ${t.statusName(level.status)} - ${level.progress.attempt}/${level.progress.maxAttempts}`}
+              className={`h-11 min-w-0 overflow-hidden rounded border px-3 text-left text-sm ${selectedLevel.levelCode === level.levelCode ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white"}`}
             >
               {level.levelLabel} · {t.statusName(level.status)} · {level.progress.attempt}/{level.progress.maxAttempts}
             </button>
