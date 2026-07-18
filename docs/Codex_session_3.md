@@ -8,7 +8,7 @@
 ## Work completed
 
 - Added a reviewed `Import URL` flow alongside pasted text; multiple-URL imports are explicitly out of scope.
-- Added server-side article extraction with Cheerio and title/text preview before a job is created.
+- Added server-side article extraction with Cheerio 1.0.0 and title/text preview before a job is created.
 - Added SSRF and request safeguards: public HTTP(S) only, private/local host rejection, redirect revalidation, HTML-only responses, 10-second timeout, and 2 MB response cap.
 - Added an educator usage-rights confirmation and editable imported text.
 - Persisted source URL, domain, and access timestamp on jobs; rendered citations in Result and PDF export.
