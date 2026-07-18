@@ -305,6 +305,16 @@ Retrieves one publicly accessible HTML article for review before creating a job.
 
 The result view and exported worksheet render the source domain and access date when present.
 
+### Language focus extraction
+
+The pipeline's existing `key_phrases` step is presented as **Language focus** in the UI. It still extracts exactly three contiguous spans and validates their offsets against the simplified text, but its selection priority is now grammar and sentence patterns rather than topical vocabulary:
+
+- EN: verb forms, modals, connectors, prepositions, articles, and clause structures.
+- ES: verb forms, connectors, prepositions, pronoun patterns, and clause structures.
+- JA: particles, verb forms, connective expressions, politeness, and common sentence patterns.
+
+Glosses explain how an expression works in the sentence at the target reading level. At least one generated question is linked to a language-focus span and tests its use in context. No additional LLM request is introduced.
+
 ### Per-level title and resilient revision behavior
 
 - `GET /api/jobs/[id]` returns `levels[].result.title`, the title generated for that individual reading level. `sourceTitle` remains the stable source title.

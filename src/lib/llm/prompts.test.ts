@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildRevisionFeedback } from "./prompts";
+import { buildKeyPhrasePrompt, buildRevisionFeedback } from "./prompts";
 
 describe("buildRevisionFeedback", () => {
   it("lists Japanese kanji that exceed the target grade", () => {
@@ -28,5 +28,15 @@ describe("buildRevisionFeedback", () => {
 
     expect(feedback).toContain("幼くしすぎず");
     expect(feedback).not.toContain("ひらがなに開く");
+  });
+});
+
+describe("buildKeyPhrasePrompt", () => {
+  it("prioritizes grammar and sentence patterns over topic vocabulary", () => {
+    const prompt = buildKeyPhrasePrompt("en", "en_g2-3", "Plants can help a city because they give shade.");
+
+    expect(prompt).toContain("grammar or sentence-pattern examples");
+    expect(prompt).toContain("not only what the words mean");
+    expect(prompt).toContain("modals, connectors, prepositions");
   });
 });

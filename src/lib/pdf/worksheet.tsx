@@ -53,9 +53,9 @@ export type WorksheetLabels = {
 };
 
 export function worksheetLabelsFor(locale: "en" | "es" | "ja"): WorksheetLabels {
-  if (locale === "ja") return { name: "名前", date: "日付", keyPhrases: "キーフレーズ", questions: "問題", answerKey: "解答", readability: "読みやすさ", factConsistency: "事実の整合性", retained: "保持", simplified: "簡略化", lost: "欠落" };
-  if (locale === "es") return { name: "Nombre", date: "Fecha", keyPhrases: "Frases clave", questions: "Preguntas", answerKey: "Respuestas", readability: "Legibilidad", factConsistency: "Coherencia factual", retained: "Conservado", simplified: "Simplificado", lost: "Omitido" };
-  return { name: "Name", date: "Date", keyPhrases: "Key phrases", questions: "Questions", answerKey: "Answer key", readability: "Readability", factConsistency: "Fact consistency", retained: "Retained", simplified: "Simplified", lost: "Lost" };
+  if (locale === "ja") return { name: "名前", date: "日付", keyPhrases: "言語のポイント", questions: "問題", answerKey: "解答", readability: "読みやすさ", factConsistency: "事実の整合性", retained: "保持", simplified: "簡略化", lost: "欠落" };
+  if (locale === "es") return { name: "Nombre", date: "Fecha", keyPhrases: "Enfoque lingüístico", questions: "Preguntas", answerKey: "Respuestas", readability: "Legibilidad", factConsistency: "Coherencia factual", retained: "Conservado", simplified: "Simplificado", lost: "Omitido" };
+  return { name: "Name", date: "Date", keyPhrases: "Language focus", questions: "Questions", answerKey: "Answer key", readability: "Readability", factConsistency: "Fact consistency", retained: "Retained", simplified: "Simplified", lost: "Lost" };
 }
 
 const styles = StyleSheet.create({

@@ -36,11 +36,21 @@ export function buildKeyPhrasePrompt(lang: SupportedLang, levelCode: string, sim
   const level = levelForCode(levelCode);
   if (!level) throw new Error(`Unknown level code: ${levelCode}`);
 
+  const languageGuidance = lang === "ja"
+    ? "Prioritize particles, verb forms, connective expressions, polite/plain forms, and common sentence patterns."
+    : lang === "es"
+      ? "Prioritize verb forms, connectors, prepositions, pronoun patterns, and common clause structures."
+      : "Prioritize verb forms, modals, connectors, prepositions, articles, and common clause structures.";
+
   return [
-    "Extract exactly 3 important phrases from the simplified text.",
+    "Extract exactly 3 language-focus snippets from the simplified text for reading and grammar instruction.",
     `Language: ${lang}. Reading level: ${level.label}.`,
+    languageGuidance,
+    "Choose teachable grammar or sentence-pattern examples before content vocabulary.",
+    "Do not choose a named entity or isolated topic word unless it is part of a teachable language pattern.",
     "Each phrase must be copied exactly from the simplified text.",
-    "Write each gloss at the same reading level as the simplified text.",
+    "Each phrase must be one contiguous excerpt. Select three distinct patterns when possible.",
+    "Write each gloss at the same reading level as the simplified text. Explain how the expression works in the sentence, not only what the words mean.",
     `Simplified text:\n${simplifiedText}`,
   ].join("\n\n");
 }
@@ -59,9 +69,9 @@ export function buildQuestionsPrompt(
   return [
     `Create ${questionCount} comprehension questions in ${lang} for ${level.label}.`,
     `Question type: ${questionType}. If multiple_choice, provide exactly 4 choices and answer as the zero-based choice index string.`,
-    "At least one question must link to a key phrase by keyPhrasePosition.",
-    "Use null for keyPhrasePosition only when the question is not based on a key phrase.",
-    `Key phrases:\n${JSON.stringify(keyPhrases)}`,
+    "At least one question must link to a language-focus snippet by keyPhrasePosition and ask how that expression works in the passage.",
+    "Use null for keyPhrasePosition only when the question is not based on a language-focus snippet.",
+    `Language focus snippets:\n${JSON.stringify(keyPhrases)}`,
     `Simplified text:\n${simplifiedText}`,
   ].join("\n\n");
 }

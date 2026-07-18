@@ -201,6 +201,12 @@
 - While conversion, verification, fact checking, phrase extraction, or question generation is active, the simplified-text panel shows a visible in-progress notice with the current phase and verification attempt. Draft text can change only within this indicated processing state.
 - The regeneration action belongs in the simplified-text panel header next to the selected level label.
 
+### Language focus
+
+- The former Key phrases panel is labeled `Language focus` / `Enfoque lingüístico` / `言語のポイント` according to the UI locale.
+- It highlights three exact spans in the simplified text and explains teachable grammar or sentence patterns rather than only topic vocabulary.
+- Clicking an item still scrolls to and briefly highlights its matching text span. Linked questions identify language-focus usage in context.
+
 ### S1 URL article import (single URL only)
 
 - S1 provides adjacent `Paste text` and `Import URL` modes. Pasting remains the default.
