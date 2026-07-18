@@ -40,3 +40,10 @@
 - Applied the speed-neutral UI improvements identified against Figma's hierarchy, progressive-disclosure, consistency, accessibility, proximity, and alignment principles.
 - Added neutral first-visit source-length guidance, a dedicated mobile navigation row, visible keyboard focus handling, reduced-motion support, clearer Result action hierarchy, and a localized Guide quick start before the detailed instructions.
 - Updated `LevelLens_ui.md` with the responsive and accessibility behavior. Delivery commit: `bbed836`.
+
+## Follow-up: Teacher workflow clarity (2026-07-18)
+
+- Added localized explanations beside a disabled conversion action, using the existing character and level-selection validation state.
+- Made persisted readability and fact-consistency outcomes immediately scannable with explicit status badges; no additional model or API work is performed.
+- Expanded History metadata with level labels and status, and standardized empty/error states across History, Result, Questions, and Export.
+- Updated `LevelLens_ui.md`. Delivery commit: `144da5b`.
