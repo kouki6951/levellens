@@ -189,7 +189,8 @@
 {
   "jobId": "5f0c2e...",
   "levelCodes": ["en_g2-3", "en_g4-5"],
-  "include": { "keyPhraseBox": true, "questions": true, "answerPage": true }
+  "include": { "keyPhraseBox": true, "questions": true, "answerPage": true, "teacherSummary": true },
+  "locale": "en"
 }
 ```
 
@@ -198,6 +199,7 @@
 - 実装: `@react-pdf/renderer`。Vercel のサーバレス環境で Chromium バイナリを必要とせず、React の同一コンポーネントを S4 のプレビューとダウンロード生成に共有できるため採用する。JA フォントは Noto Sans JP を埋め込む。
 - 複数レベルは 1 PDF に連結。解答ページは末尾にまとめる。
 - 未完了レベルを指定した場合: `409 LEVEL_NOT_READY`。
+- `locale` は PDF 内の固定ラベル（名前・日付・キーフレーズ・問題・解答・品質要約）に適用する。教材本文の言語とは独立する。
 
 ---
 

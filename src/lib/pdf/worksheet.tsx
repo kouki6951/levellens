@@ -21,19 +21,49 @@ export type WorksheetLevel = {
   simplifiedText: string;
   keyPhrases: Array<{ position: number; phrase: string; charStart: number; charEnd: number; gloss: string }>;
   questions: WorksheetQuestion[];
+  quality?: {
+    metric: string | null;
+    score: number | null;
+    targetMin: number | null;
+    targetMax: number | null;
+    retained: number | null;
+    simplified: number | null;
+    lost: number | null;
+  };
 };
 
 export type WorksheetOptions = {
   keyPhraseBox: boolean;
   questions: boolean;
   answerPage: boolean;
+  teacherSummary: boolean;
 };
+
+export type WorksheetLabels = {
+  name: string;
+  date: string;
+  keyPhrases: string;
+  questions: string;
+  answerKey: string;
+  readability: string;
+  factConsistency: string;
+  retained: string;
+  simplified: string;
+  lost: string;
+};
+
+export function worksheetLabelsFor(locale: "en" | "es" | "ja"): WorksheetLabels {
+  if (locale === "ja") return { name: "名前", date: "日付", keyPhrases: "キーフレーズ", questions: "問題", answerKey: "解答", readability: "読みやすさ", factConsistency: "事実の整合性", retained: "保持", simplified: "簡略化", lost: "欠落" };
+  if (locale === "es") return { name: "Nombre", date: "Fecha", keyPhrases: "Frases clave", questions: "Preguntas", answerKey: "Respuestas", readability: "Legibilidad", factConsistency: "Coherencia factual", retained: "Conservado", simplified: "Simplificado", lost: "Omitido" };
+  return { name: "Name", date: "Date", keyPhrases: "Key phrases", questions: "Questions", answerKey: "Answer key", readability: "Readability", factConsistency: "Fact consistency", retained: "Retained", simplified: "Simplified", lost: "Lost" };
+}
 
 const styles = StyleSheet.create({
   page: { padding: 42, fontFamily: "NotoSansJP", fontSize: 10, lineHeight: 1.6, color: "#1c1917" },
   header: { marginBottom: 18, borderBottomWidth: 1, borderBottomColor: "#a8a29e", paddingBottom: 8 },
   title: { fontSize: 18, fontWeight: 700 },
   level: { fontSize: 10, color: "#57534e", marginTop: 3 },
+  fields: { flexDirection: "row", gap: 20, marginTop: 8, fontSize: 9, color: "#44403c" },
   body: { fontSize: 11, marginBottom: 16 },
   highlight: { backgroundColor: "#fde68a" },
   section: { marginTop: 14 },
@@ -43,6 +73,8 @@ const styles = StyleSheet.create({
   question: { marginBottom: 10 },
   choice: { marginLeft: 10 },
   answer: { marginBottom: 8 },
+  qualityBox: { marginTop: 12, borderWidth: 1, borderColor: "#d6d3d1", padding: 8, backgroundColor: "#f5f5f4" },
+  qualityLine: { fontSize: 9, marginTop: 2 },
 });
 
 function markedText(text: string, phrases: WorksheetLevel["keyPhrases"]) {
@@ -62,7 +94,7 @@ function choicesFor(question: WorksheetQuestion) {
   return Array.isArray(question.choices) ? question.choices.filter((choice): choice is string => typeof choice === "string") : [];
 }
 
-export function WorksheetDocument({ title, levels, include }: { title: string; levels: WorksheetLevel[]; include: WorksheetOptions }) {
+export function WorksheetDocument({ title, levels, include, labels }: { title: string; levels: WorksheetLevel[]; include: WorksheetOptions; labels: WorksheetLabels }) {
   return (
     <Document title={`LevelLens - ${title}`}>
       {levels.map((level) => (
@@ -70,14 +102,19 @@ export function WorksheetDocument({ title, levels, include }: { title: string; l
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
             <Text style={styles.level}>{level.levelLabel}</Text>
+            <View style={styles.fields}><Text>{`${labels.name}: ____________________`}</Text><Text>{`${labels.date}: ____________________`}</Text></View>
           </View>
           <Text style={styles.body}>{markedText(level.simplifiedText, level.keyPhrases)}</Text>
+          {include.teacherSummary && level.quality ? <View style={styles.qualityBox}>
+            <Text style={styles.qualityLine}>{`${labels.readability}: ${level.quality.metric ?? "-"} ${level.quality.score ?? "-"} (${level.quality.targetMin ?? "-"}-${level.quality.targetMax ?? "-"})`}</Text>
+            <Text style={styles.qualityLine}>{`${labels.factConsistency}: ${labels.retained} ${level.quality.retained ?? 0} / ${labels.simplified} ${level.quality.simplified ?? 0} / ${labels.lost} ${level.quality.lost ?? 0}`}</Text>
+          </View> : null}
           {include.keyPhraseBox ? <View style={[styles.section, styles.phraseBox]}>
-            <Text style={styles.sectionTitle}>Key phrases</Text>
+            <Text style={styles.sectionTitle}>{labels.keyPhrases}</Text>
             {level.keyPhrases.map((phrase) => <Text key={phrase.position} style={styles.phrase}>{`${phrase.position}. ${phrase.phrase}: ${phrase.gloss}`}</Text>)}
           </View> : null}
           {include.questions ? <View style={styles.section} wrap={false}>
-            <Text style={styles.sectionTitle}>Questions</Text>
+            <Text style={styles.sectionTitle}>{labels.questions}</Text>
             {level.questions.map((question) => <View key={question.id} style={styles.question} wrap={false}>
               <Text>{`${question.orderIndex}. ${question.questionText}`}</Text>
               {choicesFor(question).map((choice, index) => <Text key={index} style={styles.choice}>{`${String.fromCharCode(65 + index)}. ${choice}`}</Text>)}
@@ -86,7 +123,7 @@ export function WorksheetDocument({ title, levels, include }: { title: string; l
         </Page>
       ))}
       {include.answerPage ? <Page size="A4" style={styles.page}>
-        <View style={styles.header}><Text style={styles.title}>Answer key</Text></View>
+        <View style={styles.header}><Text style={styles.title}>{labels.answerKey}</Text></View>
         {levels.flatMap((level) => level.questions.map((question) => <View key={question.id} style={styles.answer}>
           <Text>{`${level.levelLabel} - ${question.orderIndex}. ${question.answer}`}</Text>
           {question.explanation ? <Text>{question.explanation}</Text> : null}

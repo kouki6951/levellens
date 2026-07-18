@@ -4,18 +4,18 @@ import { PDFViewer } from "@react-pdf/renderer";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { WorksheetDocument, type WorksheetLevel, type WorksheetOptions } from "@/lib/pdf/worksheet";
+import { worksheetLabelsFor, WorksheetDocument, type WorksheetLevel, type WorksheetOptions } from "@/lib/pdf/worksheet";
 import { useLocale } from "@/components/locale-provider";
 
 type ExportLevel = WorksheetLevel & { id: string; status: string };
-type ExportJob = { sourceTitle: string | null; levels: Array<{ id: string; levelCode: string; levelLabel: string; status: string; result: { simplifiedText: string | null; keyPhrases: WorksheetLevel["keyPhrases"]; questions: WorksheetLevel["questions"] } }> };
+type ExportJob = { sourceTitle: string | null; levels: Array<{ id: string; levelCode: string; levelLabel: string; status: string; result: { simplifiedText: string | null; keyPhrases: WorksheetLevel["keyPhrases"]; questions: WorksheetLevel["questions"]; readability: WorksheetLevel["quality"]; factCheck: { retained: number; simplified: number; lost: number } | null } }> };
 
 export default function ExportPage() {
   const { jobId } = useParams<{ jobId: string }>();
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
   const [job, setJob] = useState<ExportJob | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
-  const [include, setInclude] = useState<WorksheetOptions>({ keyPhraseBox: true, questions: true, answerPage: true });
+  const [include, setInclude] = useState<WorksheetOptions>({ keyPhraseBox: true, questions: true, answerPage: true, teacherSummary: true });
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
 
@@ -38,24 +38,24 @@ export default function ExportPage() {
 
   const levels = useMemo<ExportLevel[]>(() => (job?.levels ?? [])
     .filter((level) => selected.includes(level.levelCode) && level.status === "completed" && level.result.simplifiedText)
-    .map((level) => ({ id: level.id, levelCode: level.levelCode, levelLabel: level.levelLabel, status: level.status, simplifiedText: level.result.simplifiedText!, keyPhrases: level.result.keyPhrases, questions: level.result.questions })), [job, selected]);
+    .map((level) => ({ id: level.id, levelCode: level.levelCode, levelLabel: level.levelLabel, status: level.status, simplifiedText: level.result.simplifiedText!, keyPhrases: level.result.keyPhrases, questions: level.result.questions, quality: level.result.readability ? { ...level.result.readability, retained: level.result.factCheck?.retained ?? null, simplified: level.result.factCheck?.simplified ?? null, lost: level.result.factCheck?.lost ?? null } : undefined })), [job, selected]);
 
   function toggleLevel(code: string) {
     setSelected((current) => current.includes(code) ? current.filter((item) => item !== code) : [...current, code]);
   }
 
   function selectStudentCopy() {
-    setInclude({ keyPhraseBox: true, questions: true, answerPage: false });
+    setInclude({ keyPhraseBox: true, questions: true, answerPage: false, teacherSummary: false });
   }
 
   function selectTeacherCopy() {
-    setInclude({ keyPhraseBox: true, questions: true, answerPage: true });
+    setInclude({ keyPhraseBox: true, questions: true, answerPage: true, teacherSummary: true });
   }
 
   async function download() {
     if (levels.length === 0) return;
     setDownloading(true);
-    const response = await fetch("/api/export", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jobId, levelCodes: levels.map((level) => level.levelCode), include }) });
+    const response = await fetch("/api/export", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jobId, levelCodes: levels.map((level) => level.levelCode), include, locale }) });
     if (!response.ok) {
       const data = await response.json();
       setError(data.error?.message || t.createPdfError);
@@ -102,7 +102,7 @@ export default function ExportPage() {
           <Link href={`/result/${jobId}`} className="block text-sm underline">{t.backToResults}</Link>
         </aside>
         <section className="min-h-[900px] border border-stone-300 bg-stone-200 p-3">
-          {levels.length > 0 ? <PDFViewer width="100%" height="900" showToolbar={false}><WorksheetDocument title={job.sourceTitle || t.worksheet} levels={levels} include={include} /></PDFViewer> : <div className="grid h-full place-items-center bg-white text-sm text-stone-600">{t.selectCompletedLevel}</div>}
+          {levels.length > 0 ? <PDFViewer width="100%" height="900" showToolbar={false}><WorksheetDocument title={job.sourceTitle || t.worksheet} levels={levels} include={include} labels={worksheetLabelsFor(locale)} /></PDFViewer> : <div className="grid h-full place-items-center bg-white text-sm text-stone-600">{t.selectCompletedLevel}</div>}
         </section>
       </section>
     </main>

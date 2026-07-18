@@ -104,7 +104,7 @@ export default function Home() {
             <h1 className="text-2xl font-semibold">{t.newMaterial}</h1>
           </div>
           <span className="rounded border border-stone-300 bg-white px-3 py-1 text-sm">
-            {t.detected(lang.toUpperCase(), Math.round(confidence * 100))}
+            {manualLanguage ? t.manualLanguage(lang.toUpperCase()) : t.detected(lang.toUpperCase(), Math.round(confidence * 100))}
           </span>
         </header>
 
@@ -114,7 +114,7 @@ export default function Home() {
               <label className="text-sm font-medium" htmlFor="source">
                 {t.teachingMaterial}
               </label>
-              <span className={`text-sm ${sourceText.length > 8000 ? "text-red-700" : "text-stone-600"}`}>{sourceText.length} / 8000</span>
+              <span className={`text-sm ${sourceText.length < 200 || sourceText.length > 8000 ? "text-red-700" : "text-stone-600"}`}>{sourceText.length} / 8000</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {SAMPLE_LANGUAGE_ORDER.map((code) => {
@@ -132,6 +132,7 @@ export default function Home() {
               value={sourceText}
               onChange={(event) => setSourceText(event.target.value)}
             />
+            {sourceText.length < 200 ? <p className="text-sm text-red-700" aria-live="polite">{t.charactersNeeded(200 - sourceText.length)}</p> : null}
           </section>
 
           <aside className="flex flex-col gap-6 border-l border-stone-300 pl-0 lg:pl-6">
@@ -152,7 +153,7 @@ export default function Home() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-600">{t.targetLevels}</h2>
+              <div className="flex items-center justify-between"><h2 className="text-sm font-semibold uppercase tracking-wide text-stone-600">{t.targetLevels}</h2><span className="text-xs text-stone-600">{t.selectedLevels(selected.length)}</span></div>
               <div className="grid gap-2">
                 {levels.map((level) => {
                   const active = selected.includes(level.code);
@@ -178,6 +179,7 @@ export default function Home() {
             </section>
 
             {error ? <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p> : null}
+            {selected.length === 0 ? <p className="text-sm text-red-700" aria-live="polite">{t.selectLevelRequired}</p> : null}
             <button
               type="button"
               disabled={invalid}
