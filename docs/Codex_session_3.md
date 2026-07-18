@@ -29,3 +29,4 @@
 - Re-ran the previously failed `ja_jlpt_n4n3` level `686abc23-6b35-45aa-a86d-54b8b5e4eb57`: it completed after two verification attempts with score `3.21` in its `2.0-3.5` target range.
 - Ordered all Result API level arrays by the level master so tabs render low-to-high, independent of the order in which levels were selected. Delivery commit: `bd8ad49`.
 - Reoriented the existing key-phrase extraction call toward grammar and sentence-pattern instruction, relabeled it as Language focus across UI/PDF/questions, and added prompt coverage. Delivery commit: `79bd5c8`.
+- Replaced text-only page loading states with an accessible animated loading indicator across Result, Questions, Export, and History. Delivery commit: pending.

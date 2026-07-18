@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { worksheetLabelsFor, WorksheetDocument, type WorksheetLevel, type WorksheetOptions } from "@/lib/pdf/worksheet";
 import { useLocale } from "@/components/locale-provider";
+import { LoadingState } from "@/components/loading-state";
 
 type ExportLevel = WorksheetLevel & { id: string; status: string };
 type ExportJob = { sourceTitle: string | null; source: { url: string; domain: string; accessedAt: string | null } | null; levels: Array<{ id: string; levelCode: string; levelLabel: string; status: string; result: { title: string | null; simplifiedText: string | null; keyPhrases: WorksheetLevel["keyPhrases"]; questions: WorksheetLevel["questions"]; readability: WorksheetLevel["quality"]; factCheck: { retained: number; simplified: number; lost: number } | null } }> };
@@ -73,7 +74,7 @@ export default function ExportPage() {
   }
 
   if (error) return <main className="min-h-screen p-6 text-red-800">{error}</main>;
-  if (!job) return <main className="min-h-screen p-6">{t.loading}</main>;
+  if (!job) return <main className="grid min-h-screen place-items-center p-6"><LoadingState label={t.loading} /></main>;
 
   return (
     <main className="min-h-screen bg-[#f7f7f4] text-stone-950">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
+import { LoadingState } from "@/components/loading-state";
 
 type Question = {
   id: string;
@@ -62,7 +63,7 @@ export default function QuestionsPage() {
   }
 
   if (error) return <main className="min-h-screen p-6 text-red-800">{error}</main>;
-  if (!job || !level) return <main className="min-h-screen p-6">{t.loading}</main>;
+  if (!job || !level) return <main className="grid min-h-screen place-items-center p-6"><LoadingState label={t.loading} /></main>;
 
   return (
     <main className="min-h-screen bg-[#f7f7f4] text-stone-950">

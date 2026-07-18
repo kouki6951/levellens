@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
+import { LoadingState } from "@/components/loading-state";
 
 type HistoryJob = { id: string; sourceTitle: string | null; sourceText: string; lang: string; status: string; createdAt: string; completedLevels: number; levelCount: number; levelCodes: string[] };
 const DRAFT_STORAGE_KEY = "levellens-reuse-draft";
@@ -40,7 +41,7 @@ export default function HistoryPage() {
         <div><p className="text-sm text-stone-600">{t.pastConversions}</p><h1 className="text-2xl font-semibold">{t.history}</h1></div>
         <Link href="/" className="rounded bg-stone-950 px-3 py-2 text-sm font-medium text-white">{t.newMaterial}</Link>
       </header>
-      {jobs === null ? <p className="text-sm text-stone-600">{t.loading}</p> : jobs.length === 0 ? (
+      {jobs === null ? <LoadingState label={t.loading} /> : jobs.length === 0 ? (
         <section className="border border-dashed border-stone-300 bg-white p-8 text-center"><h2 className="font-semibold">{t.noConversions}</h2><p className="mt-2 text-sm text-stone-600">{t.noConversionsHint}</p></section>
       ) : (
         <>

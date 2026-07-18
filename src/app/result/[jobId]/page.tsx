@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
+import { LoadingState } from "@/components/loading-state";
 
 type JobResponse = {
   jobId: string;
@@ -153,7 +154,7 @@ export default function ResultPage() {
   }
 
   if (!job || !selectedLevel) {
-    return <main className="min-h-screen bg-[#f7f7f4] p-6 text-stone-950">{t.loading}</main>;
+    return <main className="grid min-h-screen place-items-center bg-[#f7f7f4] p-6 text-stone-950"><LoadingState label={t.loading} /></main>;
   }
 
   return (

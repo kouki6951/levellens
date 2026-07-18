@@ -200,6 +200,7 @@
 - The page title uses the selected level's generated title; the source title and citation remain stable source metadata.
 - While conversion, verification, fact checking, phrase extraction, or question generation is active, the simplified-text panel shows a visible in-progress notice with the current phase and verification attempt. Draft text can change only within this indicated processing state.
 - The regeneration action belongs in the simplified-text panel header next to the selected level label.
+- Full-page data retrieval states in Result, Questions, Export, and History use an animated spinner with the localized loading label rather than text alone.
 
 ### Language focus
 
