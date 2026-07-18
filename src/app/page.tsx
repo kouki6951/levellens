@@ -11,6 +11,8 @@ const SAMPLES: Record<SupportedLang, { label: string; text: string }> = {
   es: { label: "ES: El mercado local", text: "En un mercado local, las familias compran frutas, verduras, pan y otros alimentos. Muchas personas conocen a quienes cultivan o preparan estos productos. Cuando los alimentos viajan una distancia corta, pueden llegar más frescos y usar menos combustible para el transporte. Sin embargo, los mercados también necesitan organizar horarios, precios justos y espacios limpios. Los estudiantes pueden investigar de dónde viene cada alimento, qué estación favorece su cultivo y cómo se puede evitar desperdiciar comida. Estas preguntas ayudan a comprender la relación entre la comunidad, el trabajo y el ambiente." },
 };
 
+const SAMPLE_LANGUAGE_ORDER: SupportedLang[] = ["en", "es", "ja"];
+
 export default function Home() {
   const router = useRouter();
   const { t } = useLocale();
@@ -91,11 +93,14 @@ export default function Home() {
               <span className={`text-sm ${sourceText.length > 8000 ? "text-red-700" : "text-stone-600"}`}>{sourceText.length} / 8000</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {(Object.entries(SAMPLES) as Array<[SupportedLang, (typeof SAMPLES)[SupportedLang]]>).map(([code, sample]) => (
+              {SAMPLE_LANGUAGE_ORDER.map((code) => {
+                const sample = SAMPLES[code];
+                return (
                 <button key={code} type="button" onClick={() => { setSourceText(sample.text); changeLang(code, true); }} className="rounded border border-stone-300 bg-white px-3 py-2 text-xs">
                   {sample.label}
                 </button>
-              ))}
+                );
+              })}
             </div>
             <textarea
               id="source"
