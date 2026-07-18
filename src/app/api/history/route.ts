@@ -9,6 +9,7 @@ export async function GET() {
   return Response.json(jobs.map((job) => ({
     id: job.id,
     sourceTitle: job.sourceTitle,
+    sourceUrl: job.sourceUrl,
     sourceText: job.sourceText,
     lang: job.lang,
     status: job.status,

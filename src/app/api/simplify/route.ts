@@ -13,10 +13,14 @@ export async function POST(request: Request) {
   const validated = validateSimplifyPayload(payload);
   if (!validated.ok) return apiError(validated.code);
 
-  const { sourceText, lang, targetLevels, options } = validated.data;
+  const { sourceText, lang, targetLevels, options, source } = validated.data;
   const job = await prisma.job.create({
     data: {
       sourceText,
+      sourceTitle: source?.title || null,
+      sourceUrl: source?.url || null,
+      sourceDomain: source?.domain || null,
+      sourceAccessedAt: source ? new Date(source.accessedAt) : null,
       lang,
       langDetected: lang,
       options,

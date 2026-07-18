@@ -94,7 +94,7 @@ function choicesFor(question: WorksheetQuestion) {
   return Array.isArray(question.choices) ? question.choices.filter((choice): choice is string => typeof choice === "string") : [];
 }
 
-export function WorksheetDocument({ title, levels, include, labels }: { title: string; levels: WorksheetLevel[]; include: WorksheetOptions; labels: WorksheetLabels }) {
+export function WorksheetDocument({ title, source, levels, include, labels }: { title: string; source?: { domain: string; url: string; accessedAt: string | null } | null; levels: WorksheetLevel[]; include: WorksheetOptions; labels: WorksheetLabels }) {
   return (
     <Document title={`LevelLens - ${title}`}>
       {levels.map((level) => (
@@ -102,6 +102,7 @@ export function WorksheetDocument({ title, levels, include, labels }: { title: s
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
             <Text style={styles.level}>{level.levelLabel}</Text>
+            {source ? <Text style={styles.level}>{`Source: ${source.domain} | ${source.accessedAt ? new Date(source.accessedAt).toLocaleDateString("en-CA") : ""}`}</Text> : null}
             <View style={styles.fields}><Text>{`${labels.name}: ____________________`}</Text><Text>{`${labels.date}: ____________________`}</Text></View>
           </View>
           <Text style={styles.body}>{markedText(level.simplifiedText, level.keyPhrases)}</Text>

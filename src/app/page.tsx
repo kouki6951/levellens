@@ -14,9 +14,17 @@ const SAMPLES: Record<SupportedLang, { label: string; text: string }> = {
 const SAMPLE_LANGUAGE_ORDER: SupportedLang[] = ["en", "es", "ja"];
 const DRAFT_STORAGE_KEY = "levellens-reuse-draft";
 
+const IMPORT_COPY = {
+  en: { paste: "Paste text", url: "Import URL", urlLabel: "Public article URL", fetch: "Fetch article", fetching: "Fetching article...", rights: "I confirm I may use this material for teaching.", review: "Review the extracted text before converting.", truncated: "The import was limited to the first 8,000 characters.", source: "Imported from" },
+  es: { paste: "Pegar texto", url: "Importar URL", urlLabel: "URL de artículo público", fetch: "Obtener artículo", fetching: "Obteniendo artículo...", rights: "Confirmo que puedo usar este material para la enseñanza.", review: "Revisa el texto extraído antes de convertirlo.", truncated: "La importación se limitó a los primeros 8.000 caracteres.", source: "Importado de" },
+  ja: { paste: "テキストを貼り付け", url: "URLから取り込む", urlLabel: "公開記事のURL", fetch: "記事を取得", fetching: "記事を取得中...", rights: "この教材を教育目的で利用できることを確認しました。", review: "変換する前に抽出された本文を確認してください。", truncated: "取得できる本文は先頭8,000文字までです。", source: "取得元" },
+} as const;
+
+type SourceCitation = { url: string; title: string; domain: string; accessedAt: string };
+
 export default function Home() {
   const router = useRouter();
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
   const [sourceText, setSourceText] = useState(SAMPLES.en.text);
   const [lang, setLang] = useState<SupportedLang>("en");
   const [confidence, setConfidence] = useState(0.98);
@@ -24,7 +32,15 @@ export default function Home() {
   const [selected, setSelected] = useState<string[]>(["en_g2-3", "en_g4-5"]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inputMode, setInputMode] = useState<"paste" | "url">("paste");
+  const [urlInput, setUrlInput] = useState("");
+  const [sourceCitation, setSourceCitation] = useState<SourceCitation | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [rightsConfirmed, setRightsConfirmed] = useState(false);
+  const [wasTruncated, setWasTruncated] = useState(false);
   const levels = useMemo(() => levelsForLang(lang), [lang]);
+  const importCopy = IMPORT_COPY[locale];
 
   useEffect(() => {
     const rawDraft = window.sessionStorage.getItem(DRAFT_STORAGE_KEY);
@@ -79,6 +95,7 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         sourceText,
+        source: sourceCitation,
         lang,
         targetLevels: selected,
         options: { questionCount: 3, questionType: "multiple_choice", glossEnabled: true },
@@ -91,6 +108,27 @@ export default function Home() {
       return;
     }
     router.push(`/result/${data.jobId}`);
+  }
+
+  async function importUrl() {
+    setImporting(true);
+    setImportError(null);
+    const response = await fetch("/api/import-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: urlInput }),
+    });
+    const data = await response.json();
+    setImporting(false);
+    if (!response.ok) {
+      setImportError(data.error?.message || t.startError);
+      return;
+    }
+    setSourceText(data.text);
+    setSourceCitation({ url: data.url, title: data.title, domain: data.domain, accessedAt: data.accessedAt });
+    setUrlInput(data.url);
+    setWasTruncated(Boolean(data.truncated));
+    setManualLanguage(false);
   }
 
   const invalid = sourceText.length < 200 || sourceText.length > 8000 || selected.length === 0 || submitting;
@@ -116,11 +154,26 @@ export default function Home() {
               </label>
               <span className={`text-sm ${sourceText.length < 200 || sourceText.length > 8000 ? "text-red-700" : "text-stone-600"}`}>{sourceText.length} / 8000</span>
             </div>
+            <div className="flex gap-2 border-b border-stone-200 pb-3">
+              <button type="button" onClick={() => setInputMode("paste")} className={`rounded px-3 py-2 text-sm ${inputMode === "paste" ? "bg-stone-950 text-white" : "border border-stone-300 bg-white"}`}>{importCopy.paste}</button>
+              <button type="button" onClick={() => setInputMode("url")} className={`rounded px-3 py-2 text-sm ${inputMode === "url" ? "bg-stone-950 text-white" : "border border-stone-300 bg-white"}`}>{importCopy.url}</button>
+            </div>
+            {inputMode === "url" ? <div className="space-y-3 rounded border border-stone-300 bg-stone-50 p-4">
+              <label className="block text-sm font-medium" htmlFor="article-url">{importCopy.urlLabel}</label>
+              <div className="flex gap-2">
+                <input id="article-url" type="url" value={urlInput} onChange={(event) => setUrlInput(event.target.value)} placeholder="https://example.org/article" className="min-w-0 flex-1 rounded border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-stone-700" />
+                <button type="button" onClick={importUrl} disabled={!rightsConfirmed || !urlInput || importing} className="shrink-0 rounded bg-stone-950 px-3 py-2 text-sm font-medium text-white disabled:opacity-50">{importing ? importCopy.fetching : importCopy.fetch}</button>
+              </div>
+              <label className="flex items-start gap-2 text-sm text-stone-700"><input type="checkbox" checked={rightsConfirmed} onChange={(event) => setRightsConfirmed(event.target.checked)} className="mt-1" />{importCopy.rights}</label>
+              {importError ? <p className="text-sm text-red-700">{importError}</p> : null}
+              {sourceCitation ? <p className="text-sm text-stone-600">{importCopy.source}: <a className="underline" href={sourceCitation.url} target="_blank" rel="noreferrer">{sourceCitation.title || sourceCitation.domain}</a>. {importCopy.review}</p> : null}
+              {wasTruncated ? <p className="text-sm text-amber-800">{importCopy.truncated}</p> : null}
+            </div> : null}
             <div className="flex flex-wrap gap-2">
               {SAMPLE_LANGUAGE_ORDER.map((code) => {
                 const sample = SAMPLES[code];
                 return (
-                <button key={code} type="button" onClick={() => { setSourceText(sample.text); changeLang(code, true); }} className="rounded border border-stone-300 bg-white px-3 py-2 text-xs">
+                <button key={code} type="button" onClick={() => { setSourceText(sample.text); setSourceCitation(null); setWasTruncated(false); changeLang(code, true); }} className="rounded border border-stone-300 bg-white px-3 py-2 text-xs">
                   {sample.label}
                 </button>
                 );

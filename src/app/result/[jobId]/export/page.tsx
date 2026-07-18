@@ -8,7 +8,7 @@ import { worksheetLabelsFor, WorksheetDocument, type WorksheetLevel, type Worksh
 import { useLocale } from "@/components/locale-provider";
 
 type ExportLevel = WorksheetLevel & { id: string; status: string };
-type ExportJob = { sourceTitle: string | null; levels: Array<{ id: string; levelCode: string; levelLabel: string; status: string; result: { simplifiedText: string | null; keyPhrases: WorksheetLevel["keyPhrases"]; questions: WorksheetLevel["questions"]; readability: WorksheetLevel["quality"]; factCheck: { retained: number; simplified: number; lost: number } | null } }> };
+type ExportJob = { sourceTitle: string | null; source: { url: string; domain: string; accessedAt: string | null } | null; levels: Array<{ id: string; levelCode: string; levelLabel: string; status: string; result: { simplifiedText: string | null; keyPhrases: WorksheetLevel["keyPhrases"]; questions: WorksheetLevel["questions"]; readability: WorksheetLevel["quality"]; factCheck: { retained: number; simplified: number; lost: number } | null } }> };
 
 export default function ExportPage() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -102,7 +102,7 @@ export default function ExportPage() {
           <Link href={`/result/${jobId}`} className="block text-sm underline">{t.backToResults}</Link>
         </aside>
         <section className="min-h-[900px] border border-stone-300 bg-stone-200 p-3">
-          {levels.length > 0 ? <PDFViewer width="100%" height="900" showToolbar={false}><WorksheetDocument title={job.sourceTitle || t.worksheet} levels={levels} include={include} labels={worksheetLabelsFor(locale)} /></PDFViewer> : <div className="grid h-full place-items-center bg-white text-sm text-stone-600">{t.selectCompletedLevel}</div>}
+          {levels.length > 0 ? <PDFViewer width="100%" height="900" showToolbar={false}><WorksheetDocument title={job.sourceTitle || t.worksheet} source={job.source} levels={levels} include={include} labels={worksheetLabelsFor(locale)} /></PDFViewer> : <div className="grid h-full place-items-center bg-white text-sm text-stone-600">{t.selectCompletedLevel}</div>}
         </section>
       </section>
     </main>

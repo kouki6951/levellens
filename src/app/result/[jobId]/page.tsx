@@ -9,6 +9,7 @@ type JobResponse = {
   jobId: string;
   status: string;
   sourceTitle: string | null;
+  source: { url: string; domain: string | null; accessedAt: string | null } | null;
   sourceText: string;
   lang: string;
   levels: Array<{
@@ -159,6 +160,7 @@ export default function ResultPage() {
           <div>
             <p className="text-sm text-stone-600">{job.lang.toUpperCase()} {t.material.toLowerCase()}</p>
             <h1 className="text-2xl font-semibold">{job.sourceTitle || t.generatedVersions}</h1>
+            {job.source ? <a className="mt-1 block max-w-xl truncate text-sm text-stone-600 underline" href={job.source.url} target="_blank" rel="noreferrer">Source: {job.source.domain || job.source.url}</a> : null}
           </div>
           <div className="flex gap-2">
             <Link href={`/result/${jobId}/questions`} className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">{t.questions}</Link>

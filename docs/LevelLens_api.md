@@ -258,3 +258,49 @@
 - Level status values also include `key_phrases` and `questions` after `fact_checking`.
 
 Clients must render partial results and loading placeholders per card for EN, ES, and JA rather than waiting for a whole level to complete.
+
+---
+
+## URL article import (single URL only)
+
+### POST /api/import-url
+
+Retrieves one publicly accessible HTML article for review before creating a job. This endpoint does not create a job and never starts the LLM pipeline.
+
+**Request**
+```json
+{ "url": "https://example.org/article" }
+```
+
+**Response 200**
+```json
+{
+  "title": "Article title",
+  "text": "Extracted article text...",
+  "url": "https://example.org/article",
+  "domain": "example.org",
+  "accessedAt": "2026-07-18T12:00:00.000Z",
+  "truncated": false
+}
+```
+
+- Only one HTTP(S) URL is accepted. Bulk URL import, PDF import, paywalled pages, and login-required pages are out of scope.
+- The server rejects loopback, private-network, link-local, and local-domain hosts before every request and redirect; redirects are limited to three.
+- Responses must be public HTML/XHTML, complete within 10 seconds, and remain below 2 MB. Extracted text is capped at 8,000 characters for the existing simplification contract.
+- The client requires an educator confirmation that they may use the material before importing. The user reviews extracted text before conversion.
+
+### Citation persistence
+
+`POST /api/simplify` optionally accepts `source` after an import:
+```json
+{
+  "source": {
+    "url": "https://example.org/article",
+    "title": "Article title",
+    "domain": "example.org",
+    "accessedAt": "2026-07-18T12:00:00.000Z"
+  }
+}
+```
+
+The result view and exported worksheet render the source domain and access date when present.

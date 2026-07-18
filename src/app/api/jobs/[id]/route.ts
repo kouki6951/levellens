@@ -37,6 +37,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     jobId: job.id,
     status: job.status,
     sourceTitle: job.sourceTitle,
+    source: job.sourceUrl ? { url: job.sourceUrl, domain: job.sourceDomain, accessedAt: job.sourceAccessedAt?.toISOString() ?? null } : null,
     sourceText: job.sourceText,
     lang: job.lang,
     levels: job.levelVersions.map((level) => ({

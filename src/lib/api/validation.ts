@@ -4,17 +4,31 @@ export function isSupportedLang(value: unknown): value is SupportedLang {
   return value === "en" || value === "ja" || value === "es";
 }
 
+export type SourceCitation = { url: string; title: string; domain: string; accessedAt: string };
+
+export function validatePublicHttpUrl(value: unknown): URL | null {
+  if (typeof value !== "string" || value.length > 2048) return null;
+  try {
+    const url = new URL(value);
+    if ((url.protocol !== "http:" && url.protocol !== "https:") || !url.hostname || url.username || url.password) return null;
+    return url;
+  } catch {
+    return null;
+  }
+}
+
 export function validateSimplifyPayload(payload: unknown):
   | {
       ok: true;
       data: {
         sourceText: string;
+        source?: SourceCitation;
         lang: SupportedLang;
         targetLevels: string[];
         options: { questionCount: 0 | 3 | 5; questionType: "multiple_choice" | "open_ended"; glossEnabled: boolean };
       };
     }
-  | { ok: false; code: "TEXT_LENGTH_INVALID" | "LANG_INVALID" | "LEVELS_INVALID" | "OPTIONS_INVALID" } {
+  | { ok: false; code: "TEXT_LENGTH_INVALID" | "LANG_INVALID" | "LEVELS_INVALID" | "OPTIONS_INVALID" | "URL_INVALID" } {
   if (!payload || typeof payload !== "object") return { ok: false, code: "TEXT_LENGTH_INVALID" };
   const body = payload as Record<string, unknown>;
 
@@ -31,6 +45,14 @@ export function validateSimplifyPayload(payload: unknown):
   }
 
   const options = (body.options ?? {}) as Record<string, unknown>;
+  let source: SourceCitation | undefined;
+  if (body.source !== undefined) {
+    if (!body.source || typeof body.source !== "object") return { ok: false, code: "URL_INVALID" };
+    const citation = body.source as Record<string, unknown>;
+    const url = validatePublicHttpUrl(citation.url);
+    if (!url || typeof citation.title !== "string" || citation.title.length > 200 || typeof citation.domain !== "string" || citation.domain.length > 255 || typeof citation.accessedAt !== "string" || Number.isNaN(Date.parse(citation.accessedAt))) return { ok: false, code: "URL_INVALID" };
+    source = { url: url.toString(), title: citation.title.trim(), domain: citation.domain.trim(), accessedAt: citation.accessedAt };
+  }
   const questionCount = options.questionCount ?? 3;
   const questionType = options.questionType ?? "multiple_choice";
   const glossEnabled = options.glossEnabled ?? true;
@@ -43,6 +65,7 @@ export function validateSimplifyPayload(payload: unknown):
     ok: true,
     data: {
       sourceText: body.sourceText,
+      source,
       lang: body.lang,
       targetLevels: body.targetLevels as string[],
       options: { questionCount, questionType, glossEnabled },

@@ -43,7 +43,8 @@ export async function POST(request: Request) {
       lost: level.verificationReport?.lostCount ?? null,
     },
   }));
-  const stream = await renderToStream(React.createElement(WorksheetDocument, { title: job.sourceTitle || "LevelLens worksheet", levels: worksheetLevels, include, labels: worksheetLabelsFor(payload.locale ?? "en") }));
+  const source = job.sourceUrl ? { url: job.sourceUrl, domain: job.sourceDomain || new URL(job.sourceUrl).hostname, accessedAt: job.sourceAccessedAt?.toISOString() ?? null } : null;
+  const stream = await renderToStream(React.createElement(WorksheetDocument, { title: job.sourceTitle || "LevelLens worksheet", source, levels: worksheetLevels, include, labels: worksheetLabelsFor(payload.locale ?? "en") }));
   const filename = `LevelLens_${(job.sourceTitle || "worksheet").replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "") || "worksheet"}.pdf`;
 
   return new Response(stream as unknown as ReadableStream, {

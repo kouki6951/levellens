@@ -168,3 +168,15 @@ jobs 1 ──── * level_versions 1 ──── * key_phrases
 `level_versions` is the source of truth for progressive rendering in EN, ES, and JA. The server persists `simplified_text` and readability fields after each verification attempt, then persists `verification_reports`, `key_phrases`, and `questions` independently. UI clients may therefore read a partial level while the job remains `processing`.
 
 The level status progression is `pending -> converting -> verifying -> fact_checking -> key_phrases -> questions -> completed`, with `failed` available from any active stage.
+
+### URL import citation metadata (v1.2, 2026-07-18)
+
+Imported public articles retain minimal provenance on `jobs`:
+
+| Column | Type | Notes |
+|---|---|---|
+| `source_url` | varchar(2048), nullable | Canonical final article URL after allowed redirects. |
+| `source_domain` | varchar(255), nullable | Hostname shown in Result and PDF citations. |
+| `source_accessed_at` | timestamptz, nullable | Import timestamp shown with the citation. |
+
+The extracted teaching text remains in `source_text`. URL metadata is optional so pasted and sample materials keep the existing workflow.

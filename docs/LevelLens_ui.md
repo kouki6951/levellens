@@ -193,3 +193,11 @@
 - Poll every 2 seconds. Replace each card's skeleton/loading indicator as soon as its corresponding data is persisted; do not wait for the whole level to reach `completed`.
 - Persisted simplified text and deterministic readability may appear during `verifying`; fact consistency may appear during `key_phrases`; key phrases may appear during `questions`.
 - The active stage remains visible in the selected level tab and text area. Terminal job states stop polling.
+
+### S1 URL article import (single URL only)
+
+- S1 provides adjacent `Paste text` and `Import URL` modes. Pasting remains the default.
+- URL mode accepts one public article URL, requires an educator rights-confirmation checkbox, and then requests a server-side preview.
+- After a successful import, the extracted title, text, source domain, and access date are retained. The extracted text remains editable in the same teaching-material textarea before conversion.
+- The client shows a clear error for private, inaccessible, non-HTML, paywalled, or oversized sources. Bulk URLs, PDFs, and authenticated sources are out of scope.
+- Result and worksheet views show source attribution only when the material originated from an imported URL.
