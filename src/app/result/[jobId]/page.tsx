@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { LoadingState } from "@/components/loading-state";
+import { PageState } from "@/components/page-state";
+import { UI_FEEDBACK } from "@/lib/ui-feedback";
 
 type JobResponse = {
   jobId: string;
@@ -84,7 +86,8 @@ function LoadingRows({ rows = 3 }: { rows?: number }) {
 
 export default function ResultPage() {
   const params = useParams<{ jobId: string }>();
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
+  const feedback = UI_FEEDBACK[locale];
   const jobId = params.jobId;
   const [job, setJob] = useState<JobResponse | null>(null);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
@@ -148,7 +151,7 @@ export default function ResultPage() {
   if (error) {
     return (
       <main className="min-h-screen bg-[#f7f7f4] p-6 text-stone-950">
-        <p className="rounded border border-red-200 bg-red-50 p-4 text-red-800">{error}</p>
+        <PageState title={feedback.resultUnavailable} description={error || feedback.resultUnavailableBody} tone="error" action={{ href: "/history", label: t.history }} />
       </main>
     );
   }
@@ -213,11 +216,11 @@ export default function ResultPage() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <section className="rounded border border-stone-300 bg-white p-4">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.readability}</h2>
-            {selectedLevel.result.readability.score !== null ? <p className="text-sm">{selectedLevel.result.readability.metric} {selectedLevel.result.readability.score?.toFixed(2)} {selectedLevel.result.readability.inRange ? t.inRange : t.nearMatch} ({t.target} {selectedLevel.result.readability.targetMin}-{selectedLevel.result.readability.targetMax}, {selectedLevel.result.readability.attemptCount} {t.attempts})</p> : <LoadingRows rows={2} />}
+            {selectedLevel.result.readability.score !== null ? <><span className={`inline-block rounded px-2 py-1 text-xs font-medium ${selectedLevel.result.readability.inRange ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-950"}`}>{selectedLevel.result.readability.inRange ? feedback.targetReached : feedback.targetOutside}</span><p className="mt-3 text-sm">{selectedLevel.result.readability.metric} {selectedLevel.result.readability.score?.toFixed(2)}</p><p className="mt-1 text-xs text-stone-600">{t.target} {selectedLevel.result.readability.targetMin}-{selectedLevel.result.readability.targetMax} · {selectedLevel.result.readability.attemptCount} {t.attempts}</p></> : <><p className="mb-3 text-xs text-stone-600">{feedback.scorePending}</p><LoadingRows rows={2} /></>}
           </section>
           <section className="rounded border border-stone-300 bg-white p-4">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.factConsistency}</h2>
-            {selectedLevel.result.factCheck ? <><p className="text-sm">{t.retained} {selectedLevel.result.factCheck.retained} / {t.simplified} {selectedLevel.result.factCheck.simplified} / {t.lost} {selectedLevel.result.factCheck.lost}</p><details className="mt-3 text-sm"><summary className="cursor-pointer font-medium text-stone-700">{t.showDetails}</summary><ul className="mt-3 space-y-2">{selectedLevel.result.factCheck.items.slice(0, 5).map((item, index) => <li key={`${item.fact}-${index}`} className="border-t border-stone-200 pt-2"><span className="font-medium">{item.status}</span>: {item.fact}</li>)}</ul></details></> : <LoadingRows rows={3} />}
+            {selectedLevel.result.factCheck ? <><span className={`inline-block rounded px-2 py-1 text-xs font-medium ${selectedLevel.result.factCheck.lost > 0 ? "bg-amber-100 text-amber-950" : "bg-emerald-100 text-emerald-900"}`}>{selectedLevel.result.factCheck.lost > 0 ? feedback.factsNeedReview(selectedLevel.result.factCheck.lost) : feedback.factsRetained}</span><p className="mt-3 text-sm">{t.retained} {selectedLevel.result.factCheck.retained} / {t.simplified} {selectedLevel.result.factCheck.simplified} / {t.lost} {selectedLevel.result.factCheck.lost}</p><details className="mt-3 text-sm"><summary className="cursor-pointer font-medium text-stone-700">{t.showDetails}</summary><ul className="mt-3 space-y-2">{selectedLevel.result.factCheck.items.slice(0, 5).map((item, index) => <li key={`${item.fact}-${index}`} className="border-t border-stone-200 pt-2"><span className="font-medium">{item.status}</span>: {item.fact}</li>)}</ul></details></> : <LoadingRows rows={3} />}
           </section>
           <section className="rounded border border-stone-300 bg-white p-4">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.keyPhrases}</h2>

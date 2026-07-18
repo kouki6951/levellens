@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { LoadingState } from "@/components/loading-state";
+import { PageState } from "@/components/page-state";
+import { UI_FEEDBACK } from "@/lib/ui-feedback";
 
 type Question = {
   id: string;
@@ -24,7 +26,8 @@ type JobQuestions = {
 
 export default function QuestionsPage() {
   const { jobId } = useParams<{ jobId: string }>();
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
+  const feedback = UI_FEEDBACK[locale];
   const [job, setJob] = useState<JobQuestions | null>(null);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [busyQuestion, setBusyQuestion] = useState<string | null>(null);
@@ -62,7 +65,7 @@ export default function QuestionsPage() {
     setBusyQuestion(null);
   }
 
-  if (error) return <main className="min-h-screen p-6 text-red-800">{error}</main>;
+  if (error) return <main className="min-h-screen bg-[#f7f7f4] p-6 text-stone-950"><PageState title={feedback.resultUnavailable} description={error} tone="error" action={{ href: "/history", label: t.history }} /></main>;
   if (!job || !level) return <main className="grid min-h-screen place-items-center p-6"><LoadingState label={t.loading} /></main>;
 
   return (

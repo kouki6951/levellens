@@ -215,6 +215,10 @@
 - On mobile, the application header places the interface-language selector on the first row and the three workspace links on a dedicated fixed grid row. This prevents localized navigation labels from competing with the logo and language selector.
 - New Material shows the 200-character requirement as neutral guidance before the source field has been visited. It becomes an error state after the field is visited and remains below the minimum.
 - On Result, Questions and Export are related secondary actions; New material is visually separated as the primary next-workflow action.
+- The New Material sidebar lists every current reason conversion is unavailable beside the disabled action, including the remaining/excess character count and missing target-level selection.
+- Result quality cards lead with an explicit state badge: readability is target reached or outside target, and fact consistency distinguishes no lost facts from a count requiring review. This presentation uses the already persisted deterministic and fact-check results.
+- History returns each level label and status. Rows surface language, overall job state, completed-level count, and selected level labels without requiring the Result page.
+- History, Result, Questions, and Export use a common action-oriented state layout for empty, filtered-empty, and unavailable-result cases.
 
 ### Empty New Material default and examples
 

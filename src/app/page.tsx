@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { levelsForLang, type SupportedLang } from "@/lib/levels";
+import { UI_FEEDBACK } from "@/lib/ui-feedback";
 
 const SAMPLES: Record<SupportedLang, { label: string; text: string }> = {
   en: { label: "EN: City gardens", text: "In many cities, small gardens are growing on roofs, balconies, and empty lots. These gardens give people fresh food, shade, and a place to meet neighbors. Plants take in carbon dioxide and release oxygen, but they also cool the ground by shading it and by releasing water from their leaves. Students can measure soil moisture, count insects, and compare temperatures in sunny and shaded places. A garden cannot solve every city problem, yet it can help a neighborhood learn how choices about land, water, and food affect daily life." },
@@ -43,6 +44,7 @@ export default function Home() {
   const [sourceTouched, setSourceTouched] = useState(false);
   const levels = useMemo(() => levelsForLang(lang), [lang]);
   const importCopy = IMPORT_COPY[locale];
+  const feedback = UI_FEEDBACK[locale];
 
   useEffect(() => {
     const rawDraft = window.sessionStorage.getItem(DRAFT_STORAGE_KEY);
@@ -135,6 +137,11 @@ export default function Home() {
 
   const invalid = sourceText.length < 200 || sourceText.length > 8000 || selected.length === 0 || submitting;
   const sourceLengthError = sourceText.length > 8000 || (sourceTouched && sourceText.length < 200);
+  const conversionNeeds = [
+    sourceText.length < 200 ? feedback.addCharacters(200 - sourceText.length) : null,
+    sourceText.length > 8000 ? feedback.reduceCharacters(sourceText.length - 8000) : null,
+    selected.length === 0 ? feedback.chooseLevel : null,
+  ].filter((message): message is string => Boolean(message));
 
   return (
     <main>
@@ -237,7 +244,7 @@ export default function Home() {
             </section>
 
             {error ? <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p> : null}
-            {selected.length === 0 ? <p className="text-sm text-red-700" aria-live="polite">{t.selectLevelRequired}</p> : null}
+            {conversionNeeds.length > 0 ? <section className="rounded border border-stone-300 bg-white p-3 text-sm" aria-live="polite"><p className="font-medium text-stone-900">{feedback.conversionNeeds}</p><ul className="mt-2 space-y-1 text-stone-600">{conversionNeeds.map((need) => <li key={need}>{need}</li>)}</ul></section> : null}
             <button
               type="button"
               disabled={invalid}

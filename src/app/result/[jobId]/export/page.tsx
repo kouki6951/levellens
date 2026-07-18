@@ -7,6 +7,8 @@ import { useParams } from "next/navigation";
 import { worksheetLabelsFor, WorksheetDocument, type WorksheetLevel, type WorksheetOptions } from "@/lib/pdf/worksheet";
 import { useLocale } from "@/components/locale-provider";
 import { LoadingState } from "@/components/loading-state";
+import { PageState } from "@/components/page-state";
+import { UI_FEEDBACK } from "@/lib/ui-feedback";
 
 type ExportLevel = WorksheetLevel & { id: string; status: string };
 type ExportJob = { sourceTitle: string | null; source: { url: string; domain: string; accessedAt: string | null } | null; levels: Array<{ id: string; levelCode: string; levelLabel: string; status: string; result: { title: string | null; simplifiedText: string | null; keyPhrases: WorksheetLevel["keyPhrases"]; questions: WorksheetLevel["questions"]; readability: WorksheetLevel["quality"]; factCheck: { retained: number; simplified: number; lost: number } | null } }> };
@@ -14,6 +16,7 @@ type ExportJob = { sourceTitle: string | null; source: { url: string; domain: st
 export default function ExportPage() {
   const { jobId } = useParams<{ jobId: string }>();
   const { locale, t } = useLocale();
+  const feedback = UI_FEEDBACK[locale];
   const [job, setJob] = useState<ExportJob | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [include, setInclude] = useState<WorksheetOptions>({ keyPhraseBox: true, questions: true, answerPage: true, teacherSummary: true });
@@ -73,7 +76,7 @@ export default function ExportPage() {
     setDownloading(false);
   }
 
-  if (error) return <main className="min-h-screen p-6 text-red-800">{error}</main>;
+  if (error) return <main className="min-h-screen bg-[#f7f7f4] p-6 text-stone-950"><PageState title={feedback.resultUnavailable} description={error} tone="error" action={{ href: "/history", label: t.history }} /></main>;
   if (!job) return <main className="grid min-h-screen place-items-center p-6"><LoadingState label={t.loading} /></main>;
 
   return (
