@@ -7,7 +7,7 @@ import { levelsForLang, type SupportedLang } from "@/lib/levels";
 
 const SAMPLES: Record<SupportedLang, { label: string; text: string }> = {
   en: { label: "EN: City gardens", text: "In many cities, small gardens are growing on roofs, balconies, and empty lots. These gardens give people fresh food, shade, and a place to meet neighbors. Plants take in carbon dioxide and release oxygen, but they also cool the ground by shading it and by releasing water from their leaves. Students can measure soil moisture, count insects, and compare temperatures in sunny and shaded places. A garden cannot solve every city problem, yet it can help a neighborhood learn how choices about land, water, and food affect daily life." },
-  ja: { label: "JA: 川の調査", text: "町の近くを流れる川は、人や生き物のくらしを支えています。学校の子どもたちは、春と秋に川の水を調べます。水の色やにおいを見て、川辺にいる魚や鳥、虫を数えます。雨がたくさん降った後は、水がにごり、ごみが遠くまで流れることがあります。調べたことを地図や表にまとめると、川の変化に気づきやすくなります。町の人もごみを減らし、水を大切に使うことで、川を守る活動に参加できます。" },
+  ja: { label: "JA: 川の調査", text: "町の近くを流れる川は、人や生き物のくらしを支えています。学校の子どもたちは、春と秋に川の水を調べます。水の色やにおいを見て、川辺にいる魚や鳥、虫を数えます。雨がたくさん降った後は、水がにごり、ごみが遠くまで流れることがあります。調べたことを地図や表にまとめると、川の変化に気づきやすくなります。町の人もごみを減らし、水を大切に使うことで、川を守る活動に参加できます。調査の結果を発表すると、家族や地域の人にも川を守る方法が伝わります。" },
   es: { label: "ES: El mercado local", text: "En un mercado local, las familias compran frutas, verduras, pan y otros alimentos. Muchas personas conocen a quienes cultivan o preparan estos productos. Cuando los alimentos viajan una distancia corta, pueden llegar más frescos y usar menos combustible para el transporte. Sin embargo, los mercados también necesitan organizar horarios, precios justos y espacios limpios. Los estudiantes pueden investigar de dónde viene cada alimento, qué estación favorece su cultivo y cómo se puede evitar desperdiciar comida. Estas preguntas ayudan a comprender la relación entre la comunidad, el trabajo y el ambiente." },
 };
 
@@ -17,14 +17,16 @@ export default function Home() {
   const [sourceText, setSourceText] = useState(SAMPLES.en.text);
   const [lang, setLang] = useState<SupportedLang>("en");
   const [confidence, setConfidence] = useState(0.98);
+  const [manualLanguage, setManualLanguage] = useState(false);
   const [selected, setSelected] = useState<string[]>(["en_g2-3", "en_g4-5"]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const levels = useMemo(() => levelsForLang(lang), [lang]);
 
-  function changeLang(nextLang: SupportedLang) {
+  function changeLang(nextLang: SupportedLang, manual = false) {
     setLang(nextLang);
     setSelected(levelsForLang(nextLang).slice(0, 2).map((level) => level.code));
+    if (manual) setManualLanguage(true);
   }
 
   useEffect(() => {
@@ -37,11 +39,11 @@ export default function Home() {
       });
       if (!response.ok) return;
       const data = (await response.json()) as { lang: SupportedLang; confidence: number };
-      if (lang !== data.lang) changeLang(data.lang);
+      if (!manualLanguage && lang !== data.lang) changeLang(data.lang);
       setConfidence(data.confidence);
     }, 500);
     return () => window.clearTimeout(handle);
-  }, [sourceText, lang]);
+  }, [sourceText, lang, manualLanguage]);
 
   async function submit() {
     setSubmitting(true);
@@ -90,7 +92,7 @@ export default function Home() {
             </div>
             <div className="flex flex-wrap gap-2">
               {(Object.entries(SAMPLES) as Array<[SupportedLang, (typeof SAMPLES)[SupportedLang]]>).map(([code, sample]) => (
-                <button key={code} type="button" onClick={() => { setSourceText(sample.text); changeLang(code); }} className="rounded border border-stone-300 bg-white px-3 py-2 text-xs">
+                <button key={code} type="button" onClick={() => { setSourceText(sample.text); changeLang(code, true); }} className="rounded border border-stone-300 bg-white px-3 py-2 text-xs">
                   {sample.label}
                 </button>
               ))}
@@ -107,12 +109,12 @@ export default function Home() {
             <section className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-600">{t.language}</h2>
               <div className="grid grid-cols-3 gap-2">
-                {(["en", "ja", "es"] as const).map((code) => (
+                {(["en", "es", "ja"] as const).map((code) => (
                   <button
                     key={code}
                     type="button"
                     className={`h-10 rounded border text-sm font-medium ${lang === code ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white"}`}
-                    onClick={() => changeLang(code)}
+                    onClick={() => changeLang(code, true)}
                   >
                     {code.toUpperCase()}
                   </button>
