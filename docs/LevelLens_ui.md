@@ -208,6 +208,11 @@
 - The page explains the teacher workflow in eight sections: adding material, choosing levels, reviewing results, using Language focus, preparing classroom materials, returning to History, understanding quality checks, and resolving results that need attention.
 - The guide follows the existing UI locale selection and does not change the teaching-material language or generated content language.
 
+### PDF answer key readability
+
+- The teacher-copy answer key groups answers by level and shows the question text, the letter plus full correct choice, and its explanation.
+- Stored zero-based answer indices are never shown directly in the worksheet. The teacher-facing layout displays `A.` through `D.` with the full answer text.
+
 ### Language focus
 
 - The former Key phrases panel is labeled `Language focus` / `Enfoque lingüístico` / `言語のポイント` according to the UI locale.

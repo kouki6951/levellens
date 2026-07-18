@@ -31,3 +31,4 @@
 - Reoriented the existing key-phrase extraction call toward grammar and sentence-pattern instruction, relabeled it as Language focus across UI/PDF/questions, and added prompt coverage. Delivery commit: `79bd5c8`.
 - Replaced text-only page loading states with an accessible animated loading indicator across Result, Questions, Export, and History. Delivery commit: `c10e2c9`.
 - Added a three-language teacher guide page and Guide navigation link. Delivery commit: `5a576bf`.
+- Improved the teacher-copy PDF answer key with grouped question text, full correct choices, explanations, and answer-format coverage. Delivery commit: pending.

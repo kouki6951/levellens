@@ -45,6 +45,7 @@ export type WorksheetLabels = {
   keyPhrases: string;
   questions: string;
   answerKey: string;
+  correctAnswer: string;
   readability: string;
   factConsistency: string;
   retained: string;
@@ -53,9 +54,9 @@ export type WorksheetLabels = {
 };
 
 export function worksheetLabelsFor(locale: "en" | "es" | "ja"): WorksheetLabels {
-  if (locale === "ja") return { name: "名前", date: "日付", keyPhrases: "言語のポイント", questions: "問題", answerKey: "解答", readability: "読みやすさ", factConsistency: "事実の整合性", retained: "保持", simplified: "簡略化", lost: "欠落" };
-  if (locale === "es") return { name: "Nombre", date: "Fecha", keyPhrases: "Enfoque lingüístico", questions: "Preguntas", answerKey: "Respuestas", readability: "Legibilidad", factConsistency: "Coherencia factual", retained: "Conservado", simplified: "Simplificado", lost: "Omitido" };
-  return { name: "Name", date: "Date", keyPhrases: "Language focus", questions: "Questions", answerKey: "Answer key", readability: "Readability", factConsistency: "Fact consistency", retained: "Retained", simplified: "Simplified", lost: "Lost" };
+  if (locale === "ja") return { name: "名前", date: "日付", keyPhrases: "言語のポイント", questions: "問題", answerKey: "解答", correctAnswer: "正答", readability: "読みやすさ", factConsistency: "事実の整合性", retained: "保持", simplified: "簡略化", lost: "欠落" };
+  if (locale === "es") return { name: "Nombre", date: "Fecha", keyPhrases: "Enfoque lingüístico", questions: "Preguntas", answerKey: "Respuestas", correctAnswer: "Respuesta correcta", readability: "Legibilidad", factConsistency: "Coherencia factual", retained: "Conservado", simplified: "Simplificado", lost: "Omitido" };
+  return { name: "Name", date: "Date", keyPhrases: "Language focus", questions: "Questions", answerKey: "Answer key", correctAnswer: "Correct answer", readability: "Readability", factConsistency: "Fact consistency", retained: "Retained", simplified: "Simplified", lost: "Lost" };
 }
 
 const styles = StyleSheet.create({
@@ -72,7 +73,12 @@ const styles = StyleSheet.create({
   phrase: { marginBottom: 5 },
   question: { marginBottom: 10 },
   choice: { marginLeft: 10 },
-  answer: { marginBottom: 8 },
+  answerLevel: { marginTop: 14, marginBottom: 6, borderBottomWidth: 1, borderBottomColor: "#a8a29e", paddingBottom: 4, fontSize: 12, fontWeight: 700 },
+  answerItem: { marginBottom: 11, paddingLeft: 8, borderLeftWidth: 2, borderLeftColor: "#d6d3d1" },
+  answerQuestion: { fontSize: 10, fontWeight: 700, marginBottom: 3 },
+  answerLine: { fontSize: 10, marginTop: 2 },
+  answerLabel: { fontWeight: 700 },
+  explanation: { color: "#57534e", fontSize: 9, marginTop: 2 },
   qualityBox: { marginTop: 12, borderWidth: 1, borderColor: "#d6d3d1", padding: 8, backgroundColor: "#f5f5f4" },
   qualityLine: { fontSize: 9, marginTop: 2 },
 });
@@ -92,6 +98,15 @@ function markedText(text: string, phrases: WorksheetLevel["keyPhrases"]) {
 
 function choicesFor(question: WorksheetQuestion) {
   return Array.isArray(question.choices) ? question.choices.filter((choice): choice is string => typeof choice === "string") : [];
+}
+
+export function answerFor(question: WorksheetQuestion) {
+  const choices = choicesFor(question);
+  if (/^\d+$/u.test(question.answer)) {
+    const index = Number(question.answer);
+    if (choices[index]) return `${String.fromCharCode(65 + index)}. ${choices[index]}`;
+  }
+  return question.answer;
 }
 
 export function WorksheetDocument({ title, source, levels, include, labels }: { title: string; source?: { domain: string; url: string; accessedAt: string | null } | null; levels: WorksheetLevel[]; include: WorksheetOptions; labels: WorksheetLabels }) {
@@ -125,10 +140,14 @@ export function WorksheetDocument({ title, source, levels, include, labels }: { 
       ))}
       {include.answerPage ? <Page size="A4" style={styles.page}>
         <View style={styles.header}><Text style={styles.title}>{labels.answerKey}</Text></View>
-        {levels.flatMap((level) => level.questions.map((question) => <View key={question.id} style={styles.answer}>
-          <Text>{`${level.levelLabel} - ${question.orderIndex}. ${question.answer}`}</Text>
-          {question.explanation ? <Text>{question.explanation}</Text> : null}
-        </View>))}
+        {levels.map((level) => <View key={level.levelCode}>
+          <Text style={styles.answerLevel}>{level.levelLabel}</Text>
+          {level.questions.map((question) => <View key={question.id} style={styles.answerItem} wrap={false}>
+            <Text style={styles.answerQuestion}>{`${question.orderIndex}. ${question.questionText}`}</Text>
+            <Text style={styles.answerLine}><Text style={styles.answerLabel}>{`${labels.correctAnswer}: `}</Text>{answerFor(question)}</Text>
+            {question.explanation ? <Text style={styles.explanation}>{question.explanation}</Text> : null}
+          </View>)}
+        </View>)}
       </Page> : null}
     </Document>
   );
