@@ -5,12 +5,14 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { WorksheetDocument, type WorksheetLevel, type WorksheetOptions } from "@/lib/pdf/worksheet";
+import { useLocale } from "@/components/locale-provider";
 
 type ExportLevel = WorksheetLevel & { id: string; status: string };
 type ExportJob = { sourceTitle: string | null; levels: Array<{ id: string; levelCode: string; levelLabel: string; status: string; result: { simplifiedText: string | null; keyPhrases: WorksheetLevel["keyPhrases"]; questions: WorksheetLevel["questions"] } }> };
 
 export default function ExportPage() {
   const { jobId } = useParams<{ jobId: string }>();
+  const { t } = useLocale();
   const [job, setJob] = useState<ExportJob | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [include, setInclude] = useState<WorksheetOptions>({ keyPhraseBox: true, questions: true, answerPage: true });
@@ -24,7 +26,7 @@ export default function ExportPage() {
       const data = await response.json();
       if (cancelled) return;
       if (!response.ok) {
-        setError(data.error?.message || "Could not load export data.");
+        setError(data.error?.message || t.loadExportError);
         return;
       }
       setJob(data);
@@ -32,7 +34,7 @@ export default function ExportPage() {
     }
     void load();
     return () => { cancelled = true; };
-  }, [jobId]);
+  }, [jobId, t.loadExportError]);
 
   const levels = useMemo<ExportLevel[]>(() => (job?.levels ?? [])
     .filter((level) => selected.includes(level.levelCode) && level.status === "completed" && level.result.simplifiedText)
@@ -48,7 +50,7 @@ export default function ExportPage() {
     const response = await fetch("/api/export", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jobId, levelCodes: levels.map((level) => level.levelCode), include }) });
     if (!response.ok) {
       const data = await response.json();
-      setError(data.error?.message || "Could not create PDF.");
+      setError(data.error?.message || t.createPdfError);
       setDownloading(false);
       return;
     }
@@ -63,32 +65,32 @@ export default function ExportPage() {
   }
 
   if (error) return <main className="min-h-screen p-6 text-red-800">{error}</main>;
-  if (!job) return <main className="min-h-screen p-6">Loading...</main>;
+  if (!job) return <main className="min-h-screen p-6">{t.loading}</main>;
 
   return (
     <main className="min-h-screen bg-[#f7f7f4] text-stone-950">
       <section className="mx-auto grid w-full max-w-7xl gap-6 px-6 py-6 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="space-y-5">
           <header>
-            <p className="text-sm text-stone-600">Export worksheet</p>
-            <h1 className="text-xl font-semibold">{job.sourceTitle || "LevelLens worksheet"}</h1>
+            <p className="text-sm text-stone-600">{t.exportWorksheet}</p>
+            <h1 className="text-xl font-semibold">{job.sourceTitle || t.worksheet}</h1>
           </header>
           <div className="border-y border-stone-300 py-4">
-            <p className="mb-2 text-sm font-semibold">Levels</p>
+            <p className="mb-2 text-sm font-semibold">{t.levels}</p>
             {job.levels.map((level) => <label key={level.id} className="mb-2 flex items-center gap-2 text-sm">
               <input type="checkbox" checked={selected.includes(level.levelCode)} disabled={level.status !== "completed"} onChange={() => toggleLevel(level.levelCode)} />
-              <span>{level.levelLabel} {level.status !== "completed" ? "(not ready)" : ""}</span>
+              <span>{level.levelLabel} {level.status !== "completed" ? t.notReady : ""}</span>
             </label>)}
           </div>
           <div className="space-y-2">
-            <p className="text-sm font-semibold">Include</p>
-            {(["keyPhraseBox", "questions", "answerPage"] as const).map((key) => <label key={key} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={include[key]} onChange={() => setInclude((current) => ({ ...current, [key]: !current[key] }))} />{key === "keyPhraseBox" ? "Key phrase box" : key === "answerPage" ? "Answer page" : "Questions"}</label>)}
+            <p className="text-sm font-semibold">{t.include}</p>
+            {(["keyPhraseBox", "questions", "answerPage"] as const).map((key) => <label key={key} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={include[key]} onChange={() => setInclude((current) => ({ ...current, [key]: !current[key] }))} />{key === "keyPhraseBox" ? t.keyPhraseBox : key === "answerPage" ? t.answerPage : t.questions}</label>)}
           </div>
-          <button type="button" onClick={download} disabled={levels.length === 0 || downloading} className="w-full rounded bg-stone-950 px-3 py-2 text-sm text-white disabled:opacity-50">{downloading ? "Preparing PDF..." : "Download PDF"}</button>
-          <Link href={`/result/${jobId}`} className="block text-sm underline">Back to results</Link>
+          <button type="button" onClick={download} disabled={levels.length === 0 || downloading} className="w-full rounded bg-stone-950 px-3 py-2 text-sm text-white disabled:opacity-50">{downloading ? t.preparingPdf : t.downloadPdf}</button>
+          <Link href={`/result/${jobId}`} className="block text-sm underline">{t.backToResults}</Link>
         </aside>
         <section className="min-h-[900px] border border-stone-300 bg-stone-200 p-3">
-          {levels.length > 0 ? <PDFViewer width="100%" height="900" showToolbar={false}><WorksheetDocument title={job.sourceTitle || "LevelLens worksheet"} levels={levels} include={include} /></PDFViewer> : <div className="grid h-full place-items-center bg-white text-sm text-stone-600">Select a completed level to preview.</div>}
+          {levels.length > 0 ? <PDFViewer width="100%" height="900" showToolbar={false}><WorksheetDocument title={job.sourceTitle || t.worksheet} levels={levels} include={include} /></PDFViewer> : <div className="grid h-full place-items-center bg-white text-sm text-stone-600">{t.selectCompletedLevel}</div>}
         </section>
       </section>
     </main>

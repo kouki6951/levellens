@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale } from "@/components/locale-provider";
 import { levelsForLang, type SupportedLang } from "@/lib/levels";
 
 const SAMPLES: Record<SupportedLang, { label: string; text: string }> = {
@@ -12,6 +13,7 @@ const SAMPLES: Record<SupportedLang, { label: string; text: string }> = {
 
 export default function Home() {
   const router = useRouter();
+  const { t } = useLocale();
   const [sourceText, setSourceText] = useState(SAMPLES.en.text);
   const [lang, setLang] = useState<SupportedLang>("en");
   const [confidence, setConfidence] = useState(0.98);
@@ -57,7 +59,7 @@ export default function Home() {
     const data = await response.json();
     setSubmitting(false);
     if (!response.ok) {
-      setError(data.error?.message || "Could not start simplification.");
+      setError(data.error?.message || t.startError);
       return;
     }
     router.push(`/result/${data.jobId}`);
@@ -70,11 +72,11 @@ export default function Home() {
       <section className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-7xl flex-col gap-6 px-6 py-7 lg:px-8">
         <header className="flex items-center justify-between border-b border-stone-300 pb-4">
           <div>
-            <p className="text-sm text-stone-600">Create a new reading-level version</p>
-            <h1 className="text-2xl font-semibold">New material</h1>
+            <p className="text-sm text-stone-600">{t.homeSubtitle}</p>
+            <h1 className="text-2xl font-semibold">{t.newMaterial}</h1>
           </div>
           <span className="rounded border border-stone-300 bg-white px-3 py-1 text-sm">
-            {lang.toUpperCase()} detected {Math.round(confidence * 100)}%
+            {t.detected(lang.toUpperCase(), Math.round(confidence * 100))}
           </span>
         </header>
 
@@ -82,7 +84,7 @@ export default function Home() {
           <section className="flex min-h-[560px] flex-col gap-3">
             <div className="flex items-end justify-between">
               <label className="text-sm font-medium" htmlFor="source">
-                Teaching material
+                {t.teachingMaterial}
               </label>
               <span className={`text-sm ${sourceText.length > 8000 ? "text-red-700" : "text-stone-600"}`}>{sourceText.length} / 8000</span>
             </div>
@@ -103,7 +105,7 @@ export default function Home() {
 
           <aside className="flex flex-col gap-6 border-l border-stone-300 pl-0 lg:pl-6">
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-600">Language</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-600">{t.language}</h2>
               <div className="grid grid-cols-3 gap-2">
                 {(["en", "ja", "es"] as const).map((code) => (
                   <button
@@ -119,7 +121,7 @@ export default function Home() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-600">Target levels</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-600">{t.targetLevels}</h2>
               <div className="grid gap-2">
                 {levels.map((level) => {
                   const active = selected.includes(level.code);
@@ -151,7 +153,7 @@ export default function Home() {
               onClick={submit}
               className="mt-auto h-12 rounded bg-stone-950 px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-stone-400"
             >
-              {submitting ? "Starting..." : "Convert material"}
+              {submitting ? t.starting : t.convertMaterial}
             </button>
           </aside>
         </div>

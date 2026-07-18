@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useLocale } from "@/components/locale-provider";
 
 type JobResponse = {
   jobId: string;
@@ -79,6 +80,7 @@ function LoadingRows({ rows = 3 }: { rows?: number }) {
 
 export default function ResultPage() {
   const params = useParams<{ jobId: string }>();
+  const { t } = useLocale();
   const jobId = params.jobId;
   const [job, setJob] = useState<JobResponse | null>(null);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
@@ -95,7 +97,7 @@ export default function ResultPage() {
       const data = await response.json();
       if (cancelled) return;
       if (!response.ok) {
-        setError(data.error?.message || "Could not load job.");
+        setError(data.error?.message || t.loading);
         return;
       }
       setJob(data);
@@ -111,7 +113,7 @@ export default function ResultPage() {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [jobId, pollKey]);
+  }, [jobId, pollKey, t.loading]);
 
   const selectedLevel = useMemo(() => job?.levels.find((level) => level.levelCode === selectedCode) || job?.levels[0], [job, selectedCode]);
 
@@ -121,7 +123,7 @@ export default function ResultPage() {
     const response = await fetch(`/api/levels/${selectedLevel.id}/regenerate`, { method: "POST" });
     if (!response.ok) {
       const data = await response.json();
-      setError(data.error?.message || "Could not regenerate this level.");
+      setError(data.error?.message || t.regenerateLevel);
       setRegenerating(false);
       return;
     }
@@ -146,7 +148,7 @@ export default function ResultPage() {
   }
 
   if (!job || !selectedLevel) {
-    return <main className="min-h-screen bg-[#f7f7f4] p-6 text-stone-950">Loading...</main>;
+    return <main className="min-h-screen bg-[#f7f7f4] p-6 text-stone-950">{t.loading}</main>;
   }
 
   return (
@@ -154,13 +156,13 @@ export default function ResultPage() {
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-6 py-6">
         <header className="flex items-center justify-between border-b border-stone-300 pb-4">
           <div>
-            <p className="text-sm text-stone-600">{job.lang.toUpperCase()} material</p>
-            <h1 className="text-2xl font-semibold">{job.sourceTitle || "Generated versions"}</h1>
+            <p className="text-sm text-stone-600">{job.lang.toUpperCase()} {t.material.toLowerCase()}</p>
+            <h1 className="text-2xl font-semibold">{job.sourceTitle || t.generatedVersions}</h1>
           </div>
           <div className="flex gap-2">
-            <Link href={`/result/${jobId}/questions`} className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">Questions</Link>
-            <Link href={`/result/${jobId}/export`} className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">Export</Link>
-            <Link href="/" className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">New material</Link>
+            <Link href={`/result/${jobId}/questions`} className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">{t.questions}</Link>
+            <Link href={`/result/${jobId}/export`} className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">{t.export}</Link>
+            <Link href="/" className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">{t.newMaterial}</Link>
           </div>
         </header>
 
@@ -172,7 +174,7 @@ export default function ResultPage() {
               onClick={() => setSelectedCode(level.levelCode)}
               className={`rounded border px-3 py-2 text-sm ${selectedLevel.levelCode === level.levelCode ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white"}`}
             >
-              {level.levelLabel} · {level.status} · try {level.progress.attempt}/{level.progress.maxAttempts}
+              {level.levelLabel} · {t.statusName(level.status)} · {level.progress.attempt}/{level.progress.maxAttempts}
             </button>
           ))}
         </nav>
@@ -182,8 +184,8 @@ export default function ResultPage() {
             {selectedLevel.result.simplifiedText ? highlightedText(selectedLevel.result.simplifiedText, selectedLevel.result.keyPhrases) : (
               <div className="text-stone-600">
                 {selectedLevel.status === "failed"
-                  ? `This level failed after ${selectedLevel.progress.attempt}/${selectedLevel.progress.maxAttempts} verification attempts.`
-                  : <><span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-stone-300 border-t-stone-700" />{selectedLevel.progress.step} in progress, attempt {selectedLevel.progress.attempt}/{selectedLevel.progress.maxAttempts}</>}
+                  ? t.failedAfter(selectedLevel.progress.attempt, selectedLevel.progress.maxAttempts)
+                  : <><span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-stone-300 border-t-stone-700" />{t.inProgress(t.stepName(selectedLevel.progress.step), selectedLevel.progress.attempt, selectedLevel.progress.maxAttempts)}</>}
               </div>
             )}
             {(selectedLevel.status === "failed" || (selectedLevel.status === "completed" && selectedLevel.result.readability.inRange === false)) ? (
@@ -193,19 +195,19 @@ export default function ResultPage() {
                 disabled={regenerating}
                 className="mt-6 rounded border border-stone-800 px-3 py-2 text-sm disabled:opacity-50"
               >
-                {regenerating ? "Regenerating..." : "Regenerate level"}
+                {regenerating ? t.regenerating : t.regenerateLevel}
               </button>
             ) : null}
           </article>
 
           <aside className="space-y-4">
             <section className="rounded border border-stone-300 bg-white p-4">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">Readability</h2>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.readability}</h2>
               {selectedLevel.result.readability.score !== null ? (
                 <p className="text-sm">
                   {selectedLevel.result.readability.metric} {selectedLevel.result.readability.score?.toFixed(2)}{" "}
-                  {selectedLevel.result.readability.inRange ? "in range" : "near match"} (target {selectedLevel.result.readability.targetMin}-
-                  {selectedLevel.result.readability.targetMax}, {selectedLevel.result.readability.attemptCount} attempts)
+                  {selectedLevel.result.readability.inRange ? t.inRange : t.nearMatch} ({t.target} {selectedLevel.result.readability.targetMin}-
+                  {selectedLevel.result.readability.targetMax}, {selectedLevel.result.readability.attemptCount} {t.attempts})
                 </p>
               ) : (
                 <LoadingRows rows={2} />
@@ -213,11 +215,11 @@ export default function ResultPage() {
             </section>
 
             <section className="rounded border border-stone-300 bg-white p-4">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">Fact consistency</h2>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.factConsistency}</h2>
               {selectedLevel.result.factCheck ? (
                 <>
                 <p className="mb-3 text-sm">
-                  Retained {selectedLevel.result.factCheck.retained} / Simplified {selectedLevel.result.factCheck.simplified} / Lost{" "}
+                  {t.retained} {selectedLevel.result.factCheck.retained} / {t.simplified} {selectedLevel.result.factCheck.simplified} / {t.lost}{" "}
                   {selectedLevel.result.factCheck.lost}
                 </p>
                 <ul className="space-y-2 text-sm">
@@ -232,7 +234,7 @@ export default function ResultPage() {
             </section>
 
             <section className="rounded border border-stone-300 bg-white p-4">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">Key phrases</h2>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.keyPhrases}</h2>
               {selectedLevel.result.keyPhrases.length > 0 ? (
                 <div className="space-y-3">
                   {selectedLevel.result.keyPhrases.map((phrase) => (
@@ -246,7 +248,7 @@ export default function ResultPage() {
             </section>
 
             <section className="rounded border border-stone-300 bg-white p-4">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">Questions</h2>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.questionLabel}</h2>
               {selectedLevel.result.questions.length > 0 ? (
                 <ol className="space-y-3 text-sm">
                   {selectedLevel.result.questions.map((question) => (

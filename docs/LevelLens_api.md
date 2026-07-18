@@ -15,6 +15,7 @@
 | 1 | POST | /api/detect-lang | 言語自動判定 | P0 |
 | 2 | POST | /api/simplify | 変換ジョブ開始 | P0 |
 | 3 | GET | /api/jobs/[id] | ジョブ状態・結果取得 | P0 |
+| 3a | GET | /api/history | 直近ジョブの履歴取得 | P0 |
 | 4 | POST | /api/export | 配布用 PDF 生成 | P0 |
 | 5 | POST | /api/levels/[id]/regenerate | 失敗レベルの再実行 | P1 |
 | 6 | POST | /api/questions/[id]/regenerate | 設問 1 件の再生成 | P1 |
@@ -158,6 +159,15 @@
     }
   ]
 }
+```
+
+## 3a. GET /api/history
+
+履歴画面用に直近30件のジョブを作成日時降順で返す。認証なしのハッカソンスコープでは、ローカルおよびデモ用の履歴として扱う。
+
+**Response 200**
+```json
+[{ "id": "...", "sourceTitle": "The Water Cycle", "lang": "en", "status": "completed", "createdAt": "...", "completedLevels": 2, "levelCount": 2 }]
 ```
 
 - `estimatedLexileBand` は EN/ES かつ P2 実装時のみ含める（換算表による参考値。null 許容）。
