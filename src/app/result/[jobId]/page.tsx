@@ -9,6 +9,7 @@ type JobResponse = {
   jobId: string;
   status: string;
   sourceTitle: string | null;
+  sourceText: string;
   lang: string;
   levels: Array<{
     id: string;
@@ -179,8 +180,13 @@ export default function ResultPage() {
           ))}
         </nav>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,11fr)_minmax(360px,9fr)]">
-          <article className="min-h-[540px] rounded border border-stone-300 bg-white p-5 text-lg leading-8">
+        <div className="grid gap-5 lg:grid-cols-2">
+          <article className="h-[520px] overflow-y-auto rounded border border-stone-300 bg-white p-5 text-base leading-8">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.originalText}</h2>
+            {job.sourceText}
+          </article>
+          <article className="h-[520px] overflow-y-auto rounded border border-stone-300 bg-white p-5 text-base leading-8">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.simplifiedText}</h2>
             {selectedLevel.result.simplifiedText ? highlightedText(selectedLevel.result.simplifiedText, selectedLevel.result.keyPhrases) : (
               <div className="text-stone-600">
                 {selectedLevel.status === "failed"
@@ -188,79 +194,27 @@ export default function ResultPage() {
                   : <><span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-stone-300 border-t-stone-700" />{t.inProgress(t.stepName(selectedLevel.progress.step), selectedLevel.progress.attempt, selectedLevel.progress.maxAttempts)}</>}
               </div>
             )}
-            {(selectedLevel.status === "failed" || (selectedLevel.status === "completed" && selectedLevel.result.readability.inRange === false)) ? (
-              <button
-                type="button"
-                onClick={regenerateLevel}
-                disabled={regenerating}
-                className="mt-6 rounded border border-stone-800 px-3 py-2 text-sm disabled:opacity-50"
-              >
-                {regenerating ? t.regenerating : t.regenerateLevel}
-              </button>
-            ) : null}
+            {(selectedLevel.status === "failed" || (selectedLevel.status === "completed" && selectedLevel.result.readability.inRange === false)) ? <button type="button" onClick={regenerateLevel} disabled={regenerating} className="mt-6 rounded border border-stone-800 px-3 py-2 text-sm disabled:opacity-50">{regenerating ? t.regenerating : t.regenerateLevel}</button> : null}
           </article>
+        </div>
 
-          <aside className="space-y-4">
-            <section className="rounded border border-stone-300 bg-white p-4">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.readability}</h2>
-              {selectedLevel.result.readability.score !== null ? (
-                <p className="text-sm">
-                  {selectedLevel.result.readability.metric} {selectedLevel.result.readability.score?.toFixed(2)}{" "}
-                  {selectedLevel.result.readability.inRange ? t.inRange : t.nearMatch} ({t.target} {selectedLevel.result.readability.targetMin}-
-                  {selectedLevel.result.readability.targetMax}, {selectedLevel.result.readability.attemptCount} {t.attempts})
-                </p>
-              ) : (
-                <LoadingRows rows={2} />
-              )}
-            </section>
-
-            <section className="rounded border border-stone-300 bg-white p-4">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.factConsistency}</h2>
-              {selectedLevel.result.factCheck ? (
-                <>
-                <p className="mb-3 text-sm">
-                  {t.retained} {selectedLevel.result.factCheck.retained} / {t.simplified} {selectedLevel.result.factCheck.simplified} / {t.lost}{" "}
-                  {selectedLevel.result.factCheck.lost}
-                </p>
-                <ul className="space-y-2 text-sm">
-                  {selectedLevel.result.factCheck.items.slice(0, 5).map((item, index) => (
-                    <li key={`${item.fact}-${index}`} className="border-t border-stone-200 pt-2">
-                      <span className="font-medium">{item.status}</span>: {item.fact}
-                    </li>
-                  ))}
-                </ul>
-                </>
-              ) : <LoadingRows rows={4} />}
-            </section>
-
-            <section className="rounded border border-stone-300 bg-white p-4">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.keyPhrases}</h2>
-              {selectedLevel.result.keyPhrases.length > 0 ? (
-                <div className="space-y-3">
-                  {selectedLevel.result.keyPhrases.map((phrase) => (
-                    <div key={phrase.id} className="cursor-pointer text-sm" onMouseEnter={() => focusKeyPhrase(phrase.id)}>
-                      <p className="font-medium">{phrase.phrase}</p>
-                      <p className="text-stone-600">{phrase.gloss}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : <LoadingRows rows={3} />}
-            </section>
-
-            <section className="rounded border border-stone-300 bg-white p-4">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.questionLabel}</h2>
-              {selectedLevel.result.questions.length > 0 ? (
-                <ol className="space-y-3 text-sm">
-                  {selectedLevel.result.questions.map((question) => (
-                    <li key={question.id}>
-                      <p className="font-medium">{question.questionText}</p>
-                      {question.choices ? <p className="text-stone-600">{question.choices.join(" / ")}</p> : null}
-                    </li>
-                  ))}
-                </ol>
-              ) : <LoadingRows rows={3} />}
-            </section>
-          </aside>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <section className="rounded border border-stone-300 bg-white p-4">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.readability}</h2>
+            {selectedLevel.result.readability.score !== null ? <p className="text-sm">{selectedLevel.result.readability.metric} {selectedLevel.result.readability.score?.toFixed(2)} {selectedLevel.result.readability.inRange ? t.inRange : t.nearMatch} ({t.target} {selectedLevel.result.readability.targetMin}-{selectedLevel.result.readability.targetMax}, {selectedLevel.result.readability.attemptCount} {t.attempts})</p> : <LoadingRows rows={2} />}
+          </section>
+          <section className="rounded border border-stone-300 bg-white p-4">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.factConsistency}</h2>
+            {selectedLevel.result.factCheck ? <><p className="mb-3 text-sm">{t.retained} {selectedLevel.result.factCheck.retained} / {t.simplified} {selectedLevel.result.factCheck.simplified} / {t.lost} {selectedLevel.result.factCheck.lost}</p><ul className="space-y-2 text-sm">{selectedLevel.result.factCheck.items.slice(0, 3).map((item, index) => <li key={`${item.fact}-${index}`} className="border-t border-stone-200 pt-2"><span className="font-medium">{item.status}</span>: {item.fact}</li>)}</ul></> : <LoadingRows rows={3} />}
+          </section>
+          <section className="rounded border border-stone-300 bg-white p-4">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.keyPhrases}</h2>
+            {selectedLevel.result.keyPhrases.length > 0 ? <div className="space-y-3">{selectedLevel.result.keyPhrases.map((phrase) => <div key={phrase.id} className="cursor-pointer text-sm" onMouseEnter={() => focusKeyPhrase(phrase.id)}><p className="font-medium">{phrase.phrase}</p><p className="text-stone-600">{phrase.gloss}</p></div>)}</div> : <LoadingRows rows={3} />}
+          </section>
+          <section className="rounded border border-stone-300 bg-white p-4">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.questionLabel}</h2>
+            {selectedLevel.result.questions.length > 0 ? <ol className="space-y-3 text-sm">{selectedLevel.result.questions.map((question) => <li key={question.id}><p className="font-medium">{question.questionText}</p>{question.choices ? <p className="text-stone-600">{question.choices.join(" / ")}</p> : null}</li>)}</ol> : <LoadingRows rows={3} />}
+          </section>
         </div>
       </section>
     </main>
