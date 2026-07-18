@@ -8,7 +8,7 @@ import { worksheetLabelsFor, WorksheetDocument, type WorksheetLevel, type Worksh
 import { useLocale } from "@/components/locale-provider";
 
 type ExportLevel = WorksheetLevel & { id: string; status: string };
-type ExportJob = { sourceTitle: string | null; source: { url: string; domain: string; accessedAt: string | null } | null; levels: Array<{ id: string; levelCode: string; levelLabel: string; status: string; result: { simplifiedText: string | null; keyPhrases: WorksheetLevel["keyPhrases"]; questions: WorksheetLevel["questions"]; readability: WorksheetLevel["quality"]; factCheck: { retained: number; simplified: number; lost: number } | null } }> };
+type ExportJob = { sourceTitle: string | null; source: { url: string; domain: string; accessedAt: string | null } | null; levels: Array<{ id: string; levelCode: string; levelLabel: string; status: string; result: { title: string | null; simplifiedText: string | null; keyPhrases: WorksheetLevel["keyPhrases"]; questions: WorksheetLevel["questions"]; readability: WorksheetLevel["quality"]; factCheck: { retained: number; simplified: number; lost: number } | null } }> };
 
 export default function ExportPage() {
   const { jobId } = useParams<{ jobId: string }>();

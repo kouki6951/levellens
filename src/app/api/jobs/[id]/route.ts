@@ -47,6 +47,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
       status: level.status,
       progress: progressFor(level.status, level.attemptCount),
       result: {
+        title: level.generatedTitle,
         simplifiedText: level.simplifiedText,
         readability: {
           metric: level.readabilityMetric,

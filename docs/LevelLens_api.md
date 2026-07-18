@@ -304,3 +304,8 @@ Retrieves one publicly accessible HTML article for review before creating a job.
 ```
 
 The result view and exported worksheet render the source domain and access date when present.
+
+### Per-level title and resilient revision behavior
+
+- `GET /api/jobs/[id]` returns `levels[].result.title`, the title generated for that individual reading level. `sourceTitle` remains the stable source title.
+- If a readability-revision request fails only after a usable draft has already been deterministically scored, the pipeline logs `verify_revision_failed` and continues with the last draft as an out-of-range near-match. It does not fail the entire level or sibling levels.

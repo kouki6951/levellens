@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { levelForCode, type SupportedLang } from "@/lib/levels";
-import { buildRevisionFeedback, extractKeyPhrases, factCheckText, generateQuestions, simplifyText } from "@/lib/llm";
+import { buildRevisionFeedback, extractKeyPhrases, factCheckText, generateQuestions, LlmError, simplifyText } from "@/lib/llm";
 import { scorerFor } from "@/lib/readability";
 
 const DEFAULT_MAX_VERIFY_ATTEMPTS = 3;
@@ -76,7 +76,17 @@ async function runLevel(jobId: string, levelVersionId: string, lang: SupportedLa
   await logEvent(jobId, levelCode, "convert_start");
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    const simplified = await simplifyText(lang, levelCode, sourceText, feedback);
+    let simplified;
+    try {
+      simplified = await simplifyText(lang, levelCode, sourceText, feedback);
+    } catch (error) {
+      // A later rewrite is optional once a usable draft has been scored. Preserve it as a near-match instead of failing the entire level on a transient LLM error.
+      if (attempt > 1 && finalText && error instanceof LlmError) {
+        await logEvent(jobId, levelCode, "verify_revision_failed", { attempt, message: error.message });
+        break;
+      }
+      throw error;
+    }
     finalText = simplified.text;
     finalTitle = simplified.title;
     finalScore = scorer.score(finalText);
@@ -87,6 +97,7 @@ async function runLevel(jobId: string, levelVersionId: string, lang: SupportedLa
       data: {
         status: "verifying",
         simplifiedText: finalText,
+        generatedTitle: finalTitle,
         attemptCount: attempt,
         readabilityMetric: finalScore.metric,
         readabilityScore: finalScore.score,
@@ -103,10 +114,6 @@ async function runLevel(jobId: string, levelVersionId: string, lang: SupportedLa
     }
 
     feedback = buildRevisionFeedback(finalScore, { targetMin: level.targetMin, targetMax: level.targetMax });
-  }
-
-  if (finalTitle) {
-    await prisma.job.update({ where: { id: jobId }, data: { sourceTitle: finalTitle } });
   }
 
   await prisma.levelVersion.update({ where: { id: levelVersionId }, data: { status: "fact_checking" } });
@@ -227,6 +234,7 @@ export async function runPipelineForLevel(levelVersionId: string) {
       data: {
         status: "pending",
         simplifiedText: null,
+        generatedTitle: null,
         attemptCount: 0,
         readabilityScore: null,
         inRange: null,

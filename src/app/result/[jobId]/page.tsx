@@ -19,6 +19,7 @@ type JobResponse = {
     status: string;
     progress: { step: string; attempt: number; maxAttempts: number };
     result: {
+      title: string | null;
       simplifiedText: string | null;
       readability: {
         metric: string | null;
@@ -103,7 +104,7 @@ export default function ResultPage() {
         return;
       }
       setJob(data);
-      setSelectedCode((current) => current || data.levels[0]?.levelCode || null);
+      setSelectedCode((current) => current && data.levels.some((level: JobResponse["levels"][number]) => level.levelCode === current) ? current : data.levels[0]?.levelCode || null);
       if (["completed", "partially_failed", "failed"].includes(data.status)) {
         window.clearInterval(interval);
       }
@@ -118,6 +119,8 @@ export default function ResultPage() {
   }, [jobId, pollKey, t.loading]);
 
   const selectedLevel = useMemo(() => job?.levels.find((level) => level.levelCode === selectedCode) || job?.levels[0], [job, selectedCode]);
+  const levelIsActive = selectedLevel ? !["completed", "failed"].includes(selectedLevel.status) : false;
+  const displayTitle = selectedLevel?.result.title || job?.sourceTitle || t.generatedVersions;
 
   async function regenerateLevel() {
     if (!selectedLevel) return;
@@ -159,7 +162,7 @@ export default function ResultPage() {
         <header className="flex items-center justify-between border-b border-stone-300 pb-4">
           <div>
             <p className="text-sm text-stone-600">{job.lang.toUpperCase()} {t.material.toLowerCase()}</p>
-            <h1 className="text-2xl font-semibold">{job.sourceTitle || t.generatedVersions}</h1>
+            <h1 className="text-2xl font-semibold">{displayTitle}</h1>
             {job.source ? <a className="mt-1 block max-w-xl truncate text-sm text-stone-600 underline" href={job.source.url} target="_blank" rel="noreferrer">Source: {job.source.domain || job.source.url}</a> : null}
           </div>
           <div className="flex gap-2">
@@ -188,7 +191,11 @@ export default function ResultPage() {
             {job.sourceText}
           </article>
           <article className="h-[520px] overflow-y-auto rounded border border-stone-300 bg-white p-5 text-base leading-8">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-stone-600">{t.simplifiedText}</h2>
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div><h2 className="text-sm font-semibold uppercase tracking-wide text-stone-600">{t.simplifiedText}</h2><p className="mt-1 text-sm font-medium text-stone-900">{selectedLevel.levelLabel}</p></div>
+              {(selectedLevel.status === "failed" || (selectedLevel.status === "completed" && selectedLevel.result.readability.inRange === false)) ? <button type="button" onClick={regenerateLevel} disabled={regenerating} className="shrink-0 rounded border border-stone-800 px-3 py-2 text-sm disabled:opacity-50">{regenerating ? t.regenerating : t.regenerateLevel}</button> : null}
+            </div>
+            {levelIsActive ? <div className="mb-4 flex items-center gap-2 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"><span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-amber-300 border-t-amber-800" />{t.inProgress(t.stepName(selectedLevel.progress.step), selectedLevel.progress.attempt, selectedLevel.progress.maxAttempts)}</div> : null}
             {selectedLevel.result.simplifiedText ? highlightedText(selectedLevel.result.simplifiedText, selectedLevel.result.keyPhrases) : (
               <div className="text-stone-600">
                 {selectedLevel.status === "failed"
@@ -196,7 +203,6 @@ export default function ResultPage() {
                   : <><span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-stone-300 border-t-stone-700" />{t.inProgress(t.stepName(selectedLevel.progress.step), selectedLevel.progress.attempt, selectedLevel.progress.maxAttempts)}</>}
               </div>
             )}
-            {(selectedLevel.status === "failed" || (selectedLevel.status === "completed" && selectedLevel.result.readability.inRange === false)) ? <button type="button" onClick={regenerateLevel} disabled={regenerating} className="mt-6 rounded border border-stone-800 px-3 py-2 text-sm disabled:opacity-50">{regenerating ? t.regenerating : t.regenerateLevel}</button> : null}
           </article>
         </div>
 

@@ -180,3 +180,7 @@ Imported public articles retain minimal provenance on `jobs`:
 | `source_accessed_at` | timestamptz, nullable | Import timestamp shown with the citation. |
 
 The extracted teaching text remains in `source_text`. URL metadata is optional so pasted and sample materials keep the existing workflow.
+
+### Per-level generated title (v1.3, 2026-07-18)
+
+`level_versions.generated_title` is a nullable `varchar(200)` produced together with `simplified_text`. It belongs to one reading level and must never overwrite `jobs.source_title`, which remains stable source metadata.

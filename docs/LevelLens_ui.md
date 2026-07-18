@@ -194,6 +194,13 @@
 - Persisted simplified text and deterministic readability may appear during `verifying`; fact consistency may appear during `key_phrases`; key phrases may appear during `questions`.
 - The active stage remains visible in the selected level tab and text area. Terminal job states stop polling.
 
+### S2 selected-level stability
+
+- Selecting a level is an explicit user action. Polling updates data but never changes the selected tab.
+- The page title uses the selected level's generated title; the source title and citation remain stable source metadata.
+- While conversion, verification, fact checking, phrase extraction, or question generation is active, the simplified-text panel shows a visible in-progress notice with the current phase and verification attempt. Draft text can change only within this indicated processing state.
+- The regeneration action belongs in the simplified-text panel header next to the selected level label.
+
 ### S1 URL article import (single URL only)
 
 - S1 provides adjacent `Paste text` and `Import URL` modes. Pasting remains the default.
