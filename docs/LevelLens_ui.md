@@ -213,6 +213,11 @@
 - The teacher-copy answer key groups answers by level and shows the question text, the letter plus full correct choice, and its explanation.
 - Stored zero-based answer indices are never shown directly in the worksheet. The teacher-facing layout displays `A.` through `D.` with the full answer text.
 
+### History reuse and controls
+
+- `Use as new material` saves the source text, language, and selected levels to session storage and performs a home-page navigation that reliably restores the draft.
+- Enabled buttons use a pointer cursor throughout the application; disabled buttons use a not-allowed cursor.
+
 ### Language focus
 
 - The former Key phrases panel is labeled `Language focus` / `Enfoque lingüístico` / `言語のポイント` according to the UI locale.

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { LoadingState } from "@/components/loading-state";
 
@@ -16,7 +15,6 @@ function titleFor(sourceTitle: string | null, sourceText: string, fallback: stri
 }
 
 export default function HistoryPage() {
-  const router = useRouter();
   const { locale, t } = useLocale();
   const [jobs, setJobs] = useState<HistoryJob[] | null>(null);
   const [query, setQuery] = useState("");
@@ -32,7 +30,7 @@ export default function HistoryPage() {
 
   function reuse(job: HistoryJob) {
     window.sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({ sourceText: job.sourceText, lang: job.lang, targetLevels: job.levelCodes }));
-    router.push("/");
+    window.location.assign("/");
   }
 
   return (
