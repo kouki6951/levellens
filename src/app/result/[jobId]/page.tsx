@@ -120,7 +120,7 @@ export default function ResultPage() {
 
   const selectedLevel = useMemo(() => job?.levels.find((level) => level.levelCode === selectedCode) || job?.levels[0], [job, selectedCode]);
   const levelIsActive = selectedLevel ? !["completed", "failed"].includes(selectedLevel.status) : false;
-  const displayTitle = selectedLevel?.result.title || job?.sourceTitle || t.generatedVersions;
+  const displayTitle = selectedLevel?.result.title || (job?.sourceTitle && selectedLevel ? `${job.sourceTitle} - ${selectedLevel.levelLabel}` : job?.sourceTitle || t.generatedVersions);
 
   async function regenerateLevel() {
     if (!selectedLevel) return;
