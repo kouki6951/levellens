@@ -66,12 +66,12 @@ export default function Home() {
   const invalid = sourceText.length < 200 || sourceText.length > 8000 || selected.length === 0 || submitting;
 
   return (
-    <main className="min-h-screen bg-[#f7f7f4] text-stone-950">
-      <section className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-6 py-6">
+    <main>
+      <section className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-7xl flex-col gap-6 px-6 py-7 lg:px-8">
         <header className="flex items-center justify-between border-b border-stone-300 pb-4">
           <div>
-            <h1 className="text-2xl font-semibold">LevelLens</h1>
-            <p className="text-sm text-stone-600">One material, every reader.</p>
+            <p className="text-sm text-stone-600">Create a new reading-level version</p>
+            <h1 className="text-2xl font-semibold">New material</h1>
           </div>
           <span className="rounded border border-stone-300 bg-white px-3 py-1 text-sm">
             {lang.toUpperCase()} detected {Math.round(confidence * 100)}%
