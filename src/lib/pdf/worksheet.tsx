@@ -51,7 +51,7 @@ function markedText(text: string, phrases: WorksheetLevel["keyPhrases"]) {
   for (const phrase of [...phrases].sort((a, b) => a.charStart - b.charStart)) {
     if (phrase.charStart < cursor) continue;
     nodes.push(text.slice(cursor, phrase.charStart));
-    nodes.push(<Text key={`${phrase.position}-${phrase.charStart}`} style={styles.highlight}>{`${phrase.position}. ${text.slice(phrase.charStart, phrase.charEnd)}`}</Text>);
+    nodes.push(<Text key={`${phrase.position}-${phrase.charStart}`} style={styles.highlight}>{text.slice(phrase.charStart, phrase.charEnd)}</Text>);
     cursor = phrase.charEnd;
   }
   nodes.push(text.slice(cursor));
