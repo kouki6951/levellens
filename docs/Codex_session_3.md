@@ -47,3 +47,10 @@
 - Made persisted readability and fact-consistency outcomes immediately scannable with explicit status badges; no additional model or API work is performed.
 - Expanded History metadata with level labels and status, and standardized empty/error states across History, Result, Questions, and Export.
 - Updated `LevelLens_ui.md`. Delivery commit: `144da5b`.
+
+## Follow-up: Two-week public hosting safeguards (2026-07-19)
+
+- Added 14-day HTTP-only anonymous workspace ownership. Jobs store a SHA-256 token hash only; all job reads, History, export, and regeneration now require the matching browser token.
+- Added owner-plus-IP fixed-window and daily quotas for conversion, URL import, regeneration, and PDF export. Quota records are hashed and deleted after two days.
+- Added a CRON_SECRET-protected daily Vercel maintenance endpoint that cascade-deletes jobs and all derived data after 14 days.
+- Updated README, `.env.example`, UI/API/DB design documents, and this session record. Delivery commit: `f6362ad`.
