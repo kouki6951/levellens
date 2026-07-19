@@ -114,4 +114,9 @@
 ## Follow-up: PDF preview CSP compatibility (2026-07-19)
 
 - Allowed `wasm-unsafe-eval` in the otherwise restrictive CSP because `@react-pdf/renderer` initializes a WebAssembly module for the in-browser PDF preview.
-- JavaScript `unsafe-eval` remains disallowed. Delivery commit: pending.
+- JavaScript `unsafe-eval` remains disallowed. Delivery commit: `13ab5e1`.
+
+## Follow-up: PDF preview blob-frame CSP compatibility (2026-07-19)
+
+- Allowed `blob:` only for `frame-src` and `worker-src`, which is required by the `PDFViewer` iframe used for the in-browser preview.
+- Kept `frame-ancestors 'none'`, `object-src 'none'`, and JavaScript `unsafe-eval` disabled. Delivery commit: pending.
