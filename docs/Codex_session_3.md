@@ -101,3 +101,8 @@
 - Fixed the Node DNS `lookup` callback used for pinned article imports: Node requests addresses with `all: true`, so the callback now returns the required address-array shape.
 - Prefer validated IPv4 addresses when available because local and serverless environments can lack IPv6 egress; retain IPv6 as a fallback.
 - Verified a pinned TLS request to `news.yahoo.co.jp` returns `200 text/html`; added IPv4-preference unit coverage. Delivery commit: `acbdfca`.
+
+## Follow-up: Local rate-limit testing recovery (2026-07-19)
+
+- Disabled persistent rate-limit accounting only when `NODE_ENV !== production`, so repeated local development checks do not lock the browser out after debugging requests.
+- Production and Vercel preview deployments retain owner-plus-IP quotas. Added coverage for the local-development bypass. Delivery commit: pending.

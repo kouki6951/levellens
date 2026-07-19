@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { clientAddress, hashSubject, ownerSessionForRequest, ownerTokenHashForRequest } from "@/lib/api/ownership";
-import { rateLimitWindowStart } from "@/lib/api/rate-limit";
+import { enforceRateLimit, rateLimitWindowStart } from "@/lib/api/rate-limit";
 
 describe("anonymous ownership helpers", () => {
   it("creates an HTTP-only owner cookie and reads it back as the same hash", () => {
@@ -16,5 +16,9 @@ describe("anonymous ownership helpers", () => {
     expect(clientAddress(request)).toBe("203.0.113.10");
     expect(hashSubject("owner:test")).toHaveLength(64);
     expect(rateLimitWindowStart(new Date("2026-07-19T12:09:59.000Z"), 600).toISOString()).toBe("2026-07-19T12:00:00.000Z");
+  });
+
+  it("does not consume persistent quotas during local development", async () => {
+    await expect(enforceRateLimit(new Request("https://example.test"), "owner", "import")).resolves.toEqual({ allowed: true, retryAfterSeconds: 0 });
   });
 });

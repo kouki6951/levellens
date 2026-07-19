@@ -344,6 +344,6 @@ Glosses explain how an expression works in the sentence at the target reading le
 ### Route resilience and security headers
 
 - Every Route Handler converts unexpected database, network, PDF, or LLM failures to the shared structured `INTERNAL_ERROR` or `LLM_ERROR` response. Logs record only an error class, never request content.
-- `POST /api/detect-lang` creates the same anonymous owner cookie used by conversion and applies a generous owner-plus-IP limit (300 requests / 5 minutes, 5,000 / day) to prevent anonymous abuse without affecting normal typing.
+- `POST /api/detect-lang` creates the same anonymous owner cookie used by conversion and applies a generous owner-plus-IP limit (300 requests / 5 minutes, 5,000 / day) to prevent anonymous abuse without affecting normal typing. Quotas run only in production, so local `npm run dev` smoke tests do not consume persistent limits.
 - The application sends a restrictive Content Security Policy plus `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, and `Permissions-Policy` headers on all routes.
 - Node.js startup validates the required server environment. `DATABASE_URL` must be PostgreSQL, `OPENAI_API_KEY` must be present, and Vercel production additionally requires `CRON_SECRET`.

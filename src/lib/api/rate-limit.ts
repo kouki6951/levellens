@@ -22,6 +22,9 @@ function keyFor(scope: string, subjectHash: string, windowStart: Date) {
 }
 
 export async function enforceRateLimit(request: Request, ownerTokenHash: string, scope: keyof typeof RATE_LIMIT_POLICIES, now = new Date()) {
+  // Local development needs repeated manual checks without consuming shared production-style quotas.
+  if (process.env.NODE_ENV !== "production") return { allowed: true, retryAfterSeconds: 0 };
+
   const subjects = [hashSubject(`owner:${ownerTokenHash}`), hashSubject(`ip:${clientAddress(request)}`)];
   let retryAfterSeconds = 0;
 
