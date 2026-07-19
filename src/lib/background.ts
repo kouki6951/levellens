@@ -1,3 +1,4 @@
+import "server-only";
 import { waitUntil } from "@vercel/functions";
 
 export function runInBackground(work: Promise<unknown>) {

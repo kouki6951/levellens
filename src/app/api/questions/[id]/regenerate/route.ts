@@ -6,11 +6,13 @@ import { generateQuestions } from "@/lib/llm";
 import type { SupportedLang } from "@/lib/levels";
 import { ownerTokenHashForRequest } from "@/lib/api/ownership";
 import { enforceRateLimit } from "@/lib/api/rate-limit";
+import { isUuid } from "@/lib/api/validation";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
   const ownerTokenHash = ownerTokenHashForRequest(request);
   if (!ownerTokenHash) return apiError("LEVEL_NOT_FOUND", "Question or completed level not found.");
+  if (!isUuid(id)) return apiError("LEVEL_NOT_FOUND", "Question or completed level not found.");
   const question = await prisma.question.findFirst({
     where: { id, levelVersion: { job: { ownerTokenHash } } },
     include: { levelVersion: { include: { job: true, keyPhrases: { orderBy: { position: "asc" } } } } },

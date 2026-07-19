@@ -3,6 +3,7 @@ import { apiError } from "@/lib/api/errors";
 import { compareLevelCodes } from "@/lib/levels";
 import { ownerTokenHashForRequest } from "@/lib/api/ownership";
 import { recoverStalledJob } from "@/lib/pipeline-health";
+import { isUuid } from "@/lib/api/validation";
 
 function progressFor(status: string, attempt: number) {
   const stepByStatus: Record<string, string> = {
@@ -22,8 +23,9 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const { id } = await context.params;
   const ownerTokenHash = ownerTokenHashForRequest(request);
   if (!ownerTokenHash) return apiError("JOB_NOT_FOUND");
+  if (!isUuid(id)) return apiError("JOB_NOT_FOUND");
 
-  await recoverStalledJob(id);
+  await recoverStalledJob(id, ownerTokenHash);
 
   const job = await prisma.job.findFirst({
     where: { id, ownerTokenHash },

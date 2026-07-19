@@ -1,3 +1,4 @@
+import "server-only";
 import { lookup } from "node:dns/promises";
 import * as cheerio from "cheerio";
 import { validatePublicHttpUrl } from "@/lib/api/validation";

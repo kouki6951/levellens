@@ -1,3 +1,4 @@
+import "server-only";
 import OpenAI from "openai";
 
 const DEFAULT_MODEL = "gpt-5.6";

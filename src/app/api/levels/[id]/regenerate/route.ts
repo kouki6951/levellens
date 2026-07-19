@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { runPipelineForLevel } from "@/lib/pipeline";
 import { ownerTokenHashForRequest } from "@/lib/api/ownership";
 import { enforceRateLimit } from "@/lib/api/rate-limit";
+import { isUuid } from "@/lib/api/validation";
 
 export const maxDuration = 300;
 
@@ -12,6 +13,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { id } = await context.params;
   const ownerTokenHash = ownerTokenHashForRequest(request);
   if (!ownerTokenHash) return apiError("LEVEL_NOT_FOUND");
+  if (!isUuid(id)) return apiError("LEVEL_NOT_FOUND");
   const level = await prisma.levelVersion.findFirst({ where: { id, job: { ownerTokenHash } }, select: { id: true, status: true, inRange: true } });
   if (!level) return apiError("LEVEL_NOT_FOUND");
   if (level.status !== "failed" && !(level.status === "completed" && level.inRange === false)) {

@@ -1,3 +1,4 @@
+import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 
@@ -14,9 +15,9 @@ export function isPipelineStalled(lastActivityAt: Date, now = new Date(), timeou
 }
 
 /** Converts work abandoned by a serverless timeout into a terminal job state. */
-export async function recoverStalledJob(jobId: string, now = new Date()) {
-  const job = await prisma.job.findUnique({
-    where: { id: jobId },
+export async function recoverStalledJob(jobId: string, ownerTokenHash: string, now = new Date()) {
+  const job = await prisma.job.findFirst({
+    where: { id: jobId, ownerTokenHash },
     select: {
       id: true,
       status: true,

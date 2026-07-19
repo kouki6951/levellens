@@ -1,3 +1,4 @@
+import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 
 const OWNER_COOKIE = "levellens_owner";

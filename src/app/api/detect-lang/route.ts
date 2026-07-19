@@ -9,8 +9,8 @@ function mapFranc(code: string) {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as { text?: string };
-  const sample = (body.text || "").slice(0, 500);
+  const body: unknown = await request.json().catch(() => null);
+  const sample = typeof body === "object" && body !== null && "text" in body && typeof body.text === "string" ? body.text.slice(0, 500) : "";
   if (!sample.trim()) return NextResponse.json({ lang: "en", confidence: 0 });
 
   if (/[\u3040-\u30ff\u3400-\u9fff]/.test(sample)) {

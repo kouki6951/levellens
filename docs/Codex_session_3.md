@@ -72,3 +72,11 @@
 - Raised conversion and per-level regeneration route duration requests to 300 seconds, without reducing verification attempts or quality checks.
 - Added no-progress recovery: after 180 seconds without a job event, the status endpoint records `job_stalled`, marks active levels failed, and finalizes the job as `failed` or `partially_failed`. The UI then stops polling and offers normal level regeneration.
 - Added unit coverage for the inactivity boundary. Delivery commit: `64123ed`.
+
+## Follow-up: Coding guideline hardening without workflow changes (2026-07-19)
+
+- Reviewed the repository against `docs/nextjs-coding-guidelines.md` and applied only changes that preserve normal UI, API success responses, prompts, and pipeline behavior.
+- Scoped stalled-job recovery to the anonymous owner token before it can mutate a job, preventing a caller who knows another job ID from triggering its terminal transition.
+- Marked database, pipeline, article-import, ownership/rate-limit, background, and OpenAI client modules as server-only. Vitest uses a test-only alias so this build-time guard does not change test execution.
+- Added safe handling for malformed language-detection JSON and invalid UUID route parameters; valid requests retain their existing behavior and responses.
+- Delivery commit: pending.
