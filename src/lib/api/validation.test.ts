@@ -15,4 +15,16 @@ describe("validateSimplifyPayload", () => {
     expect(japaneseSource.length).toBeGreaterThanOrEqual(200);
     expect(result.ok).toBe(true);
   });
+
+  it("treats a null source citation as no source citation", () => {
+    const result = validateSimplifyPayload({
+      sourceText: "A".repeat(200),
+      source: null,
+      lang: "en",
+      targetLevels: ["en_g2-3"],
+      options: { questionCount: 3, questionType: "multiple_choice", glossEnabled: true },
+    });
+
+    expect(result.ok).toBe(true);
+  });
 });

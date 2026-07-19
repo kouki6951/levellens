@@ -46,7 +46,7 @@ export function validateSimplifyPayload(payload: unknown):
 
   const options = (body.options ?? {}) as Record<string, unknown>;
   let source: SourceCitation | undefined;
-  if (body.source !== undefined) {
+  if (body.source !== undefined && body.source !== null) {
     if (!body.source || typeof body.source !== "object") return { ok: false, code: "URL_INVALID" };
     const citation = body.source as Record<string, unknown>;
     const url = validatePublicHttpUrl(citation.url);

@@ -99,7 +99,7 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         sourceText,
-        source: sourceCitation,
+        ...(sourceCitation ? { source: sourceCitation } : {}),
         lang,
         targetLevels: selected,
         options: { questionCount: 3, questionType: "multiple_choice", glossEnabled: true },

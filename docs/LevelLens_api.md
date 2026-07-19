@@ -326,3 +326,4 @@ Glosses explain how an expression works in the sentence at the target reading le
 - `GET /api/history`, `GET /api/jobs/[id]`, `POST /api/export`, and both regeneration routes require the matching owner cookie. A missing or mismatched cookie returns an empty history or a not-found response, so job IDs cannot be used to enumerate other users' materials.
 - Costly routes enforce both short-window and daily quotas against hashed anonymous-owner and forwarded-IP subjects. `429 RATE_LIMITED` includes a `Retry-After` header.
 - Vercel Cron calls `GET /api/maintenance/purge` daily with `Authorization: Bearer $CRON_SECRET`. It removes jobs older than 14 days and rate-limit rows older than 2 days. The endpoint returns `401 UNAUTHORIZED` without the configured secret.
+- `source` is optional for pasted material. Both an omitted `source` field and `source: null` are interpreted as no citation; a non-null source must pass public HTTP(S) citation validation.
