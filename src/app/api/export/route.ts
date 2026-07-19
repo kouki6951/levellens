@@ -1,6 +1,6 @@
 import { renderToStream } from "@react-pdf/renderer";
 import React from "react";
-import { apiError } from "@/lib/api/errors";
+import { apiError, unexpectedApiError } from "@/lib/api/errors";
 import { prisma } from "@/lib/db";
 import { worksheetLabelsFor, WorksheetDocument, type WorksheetLevel, type WorksheetOptions } from "@/lib/pdf/worksheet";
 import { ownerTokenHashForRequest } from "@/lib/api/ownership";
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
         "Content-Disposition": `attachment; filename="${filename}"`,
       },
     });
-  } catch {
-    return apiError("INTERNAL_ERROR");
+  } catch (error) {
+    return unexpectedApiError(error);
   }
 }

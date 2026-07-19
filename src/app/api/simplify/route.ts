@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { runInBackground } from "@/lib/background";
 import { prisma } from "@/lib/db";
-import { apiError } from "@/lib/api/errors";
+import { apiError, unexpectedApiError } from "@/lib/api/errors";
 import { validateSimplifyPayload } from "@/lib/api/validation";
 import { levelForCode } from "@/lib/levels";
 import { runPipeline } from "@/lib/pipeline";
@@ -13,19 +13,20 @@ export const maxDuration = 300;
 
 export async function POST(request: Request) {
   const ownerSession = ownerSessionForRequest(request);
-  const payload = await request.json().catch(() => null);
-  const validated = validateSimplifyPayload(payload);
-  if (!validated.ok) return addOwnerCookie(apiError(validated.code), ownerSession);
+  try {
+    const payload = await request.json().catch(() => null);
+    const validated = validateSimplifyPayload(payload);
+    if (!validated.ok) return addOwnerCookie(apiError(validated.code), ownerSession);
 
-  const rateLimit = await enforceRateLimit(request, ownerSession.tokenHash, "simplify");
-  if (!rateLimit.allowed) {
-    const response = apiError("RATE_LIMITED", "Conversion limit reached. Please try again later.");
-    response.headers.set("Retry-After", String(rateLimit.retryAfterSeconds));
-    return addOwnerCookie(response, ownerSession);
-  }
+    const rateLimit = await enforceRateLimit(request, ownerSession.tokenHash, "simplify");
+    if (!rateLimit.allowed) {
+      const response = apiError("RATE_LIMITED", "Conversion limit reached. Please try again later.");
+      response.headers.set("Retry-After", String(rateLimit.retryAfterSeconds));
+      return addOwnerCookie(response, ownerSession);
+    }
 
-  const { sourceText, lang, targetLevels, options, source } = validated.data;
-  const job = await prisma.job.create({
+    const { sourceText, lang, targetLevels, options, source } = validated.data;
+    const job = await prisma.job.create({
     data: {
       sourceText,
       sourceTitle: source?.title || null,
@@ -50,9 +51,12 @@ export async function POST(request: Request) {
         }),
       },
     },
-  });
+    });
 
-  runInBackground(runPipeline(job.id));
+    runInBackground(runPipeline(job.id));
 
-  return addOwnerCookie(NextResponse.json({ jobId: job.id, statusUrl: `/api/jobs/${job.id}` }, { status: 202 }), ownerSession);
+    return addOwnerCookie(NextResponse.json({ jobId: job.id, statusUrl: `/api/jobs/${job.id}` }, { status: 202 }), ownerSession);
+  } catch (error) {
+    return addOwnerCookie(unexpectedApiError(error), ownerSession);
+  }
 }

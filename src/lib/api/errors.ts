@@ -56,3 +56,10 @@ const MESSAGE_BY_CODE: Record<ApiErrorCode, string> = {
 export function apiError(code: ApiErrorCode, message = MESSAGE_BY_CODE[code]) {
   return NextResponse.json({ error: { code, message } }, { status: STATUS_BY_CODE[code] });
 }
+
+/** Keep unexpected route failures generic and structured without logging request content. */
+export function unexpectedApiError(error: unknown) {
+  const name = error instanceof Error ? error.name : "UnknownError";
+  console.error("Unhandled API route error", { name });
+  return apiError(name === "LlmError" ? "LLM_ERROR" : "INTERNAL_ERROR");
+}

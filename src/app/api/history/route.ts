@@ -1,16 +1,18 @@
 import { prisma } from "@/lib/db";
 import { ownerTokenHashForRequest } from "@/lib/api/ownership";
+import { unexpectedApiError } from "@/lib/api/errors";
 
 export async function GET(request: Request) {
   const ownerTokenHash = ownerTokenHashForRequest(request);
   if (!ownerTokenHash) return Response.json([]);
-  const jobs = await prisma.job.findMany({
+  try {
+    const jobs = await prisma.job.findMany({
     where: { ownerTokenHash },
     orderBy: { createdAt: "desc" },
     take: 30,
     include: { levelVersions: { select: { status: true, levelCode: true, levelLabel: true } } },
-  });
-  return Response.json(jobs.map((job) => ({
+    });
+    return Response.json(jobs.map((job) => ({
     id: job.id,
     sourceTitle: job.sourceTitle,
     sourceUrl: job.sourceUrl,
@@ -22,5 +24,8 @@ export async function GET(request: Request) {
     levelCount: job.levelVersions.length,
     levelCodes: job.levelVersions.map((level) => level.levelCode),
     levels: job.levelVersions.map((level) => ({ levelCode: level.levelCode, levelLabel: level.levelLabel, status: level.status })),
-  })));
+    })));
+  } catch (error) {
+    return unexpectedApiError(error);
+  }
 }

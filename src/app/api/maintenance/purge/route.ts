@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { apiError } from "@/lib/api/errors";
+import { apiError, unexpectedApiError } from "@/lib/api/errors";
 import { prisma } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -11,6 +11,7 @@ const RATE_LIMIT_RETENTION_DAYS = 2;
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) return apiError("UNAUTHORIZED");
+  try {
 
   const now = new Date();
   const jobCutoff = new Date(now.getTime() - JOB_RETENTION_DAYS * 24 * 60 * 60 * 1000);
@@ -20,5 +21,8 @@ export async function GET(request: Request) {
     prisma.rateLimitWindow.deleteMany({ where: { windowStart: { lt: rateLimitCutoff } } }),
   ]);
 
-  return NextResponse.json({ deletedJobs: jobs.count, deletedRateLimitWindows: rateLimitWindows.count, jobCutoff: jobCutoff.toISOString() });
+    return NextResponse.json({ deletedJobs: jobs.count, deletedRateLimitWindows: rateLimitWindows.count, jobCutoff: jobCutoff.toISOString() });
+  } catch (error) {
+    return unexpectedApiError(error);
+  }
 }

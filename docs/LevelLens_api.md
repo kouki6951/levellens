@@ -340,3 +340,10 @@ Glosses explain how an expression works in the sentence at the target reading le
 - `POST /api/export` validates the job UUID, 1-4 unique level codes, optional boolean inclusion flags, and the `en`/`es`/`ja` locale before loading data or generating a PDF.
 - PDF-rendering and question-regeneration exceptions return the existing structured `INTERNAL_ERROR` or `LLM_ERROR` JSON response rather than exposing framework errors.
 - URL import resolves every redirect host once, rejects non-public addresses, and pins the corresponding HTTP(S) connection to that validated IP address. This prevents DNS rebinding between hostname validation and the outbound fetch.
+
+### Route resilience and security headers
+
+- Every Route Handler converts unexpected database, network, PDF, or LLM failures to the shared structured `INTERNAL_ERROR` or `LLM_ERROR` response. Logs record only an error class, never request content.
+- `POST /api/detect-lang` creates the same anonymous owner cookie used by conversion and applies a generous owner-plus-IP limit (300 requests / 5 minutes, 5,000 / day) to prevent anonymous abuse without affecting normal typing.
+- The application sends a restrictive Content Security Policy plus `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, and `Permissions-Policy` headers on all routes.
+- Node.js startup validates the required server environment. `DATABASE_URL` must be PostgreSQL, `OPENAI_API_KEY` must be present, and Vercel production additionally requires `CRON_SECRET`.

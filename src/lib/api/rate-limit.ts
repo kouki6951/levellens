@@ -6,6 +6,7 @@ import { clientAddress, hashSubject } from "@/lib/api/ownership";
 export type RateLimitPolicy = { windowSeconds: number; maxRequests: number };
 
 export const RATE_LIMIT_POLICIES = {
+  detect: [{ windowSeconds: 5 * 60, maxRequests: 300 }, { windowSeconds: 24 * 60 * 60, maxRequests: 5_000 }],
   simplify: [{ windowSeconds: 10 * 60, maxRequests: 2 }, { windowSeconds: 24 * 60 * 60, maxRequests: 8 }],
   import: [{ windowSeconds: 10 * 60, maxRequests: 5 }, { windowSeconds: 24 * 60 * 60, maxRequests: 20 }],
   regenerate: [{ windowSeconds: 10 * 60, maxRequests: 4 }, { windowSeconds: 24 * 60 * 60, maxRequests: 20 }],

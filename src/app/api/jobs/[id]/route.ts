@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { apiError } from "@/lib/api/errors";
+import { apiError, unexpectedApiError } from "@/lib/api/errors";
 import { compareLevelCodes } from "@/lib/levels";
 import { ownerTokenHashForRequest } from "@/lib/api/ownership";
 import { recoverStalledJob } from "@/lib/pipeline-health";
@@ -24,10 +24,11 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const ownerTokenHash = ownerTokenHashForRequest(request);
   if (!ownerTokenHash) return apiError("JOB_NOT_FOUND");
   if (!isUuid(id)) return apiError("JOB_NOT_FOUND");
+  try {
 
-  await recoverStalledJob(id, ownerTokenHash);
+    await recoverStalledJob(id, ownerTokenHash);
 
-  const job = await prisma.job.findFirst({
+    const job = await prisma.job.findFirst({
     where: { id, ownerTokenHash },
     include: {
       levelVersions: {
@@ -39,11 +40,11 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
         },
       },
     },
-  });
+    });
 
-  if (!job) return apiError("JOB_NOT_FOUND");
+    if (!job) return apiError("JOB_NOT_FOUND");
 
-  return Response.json({
+    return Response.json({
     jobId: job.id,
     status: job.status,
     sourceTitle: job.sourceTitle,
@@ -95,5 +96,8 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
         })),
       },
     })),
-  });
+    });
+  } catch (error) {
+    return unexpectedApiError(error);
+  }
 }

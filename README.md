@@ -62,6 +62,8 @@ Open `http://localhost:3000`.
 | `MAX_VERIFY_ATTEMPTS` | No | Readability verification limit; defaults to `3`. |
 | `CRON_SECRET` | Production | Long random secret for the Vercel retention cron. |
 
+On Node.js server startup, LevelLens validates `DATABASE_URL` and `OPENAI_API_KEY`. In Vercel production it also requires `CRON_SECRET`; values are never included in validation errors.
+
 ### Verification
 
 ```bash

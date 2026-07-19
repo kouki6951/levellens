@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { apiError } from "@/lib/api/errors";
+import { apiError, unexpectedApiError } from "@/lib/api/errors";
 import { prisma } from "@/lib/db";
 import { generateQuestions, LlmError } from "@/lib/llm";
 import type { SupportedLang } from "@/lib/levels";
@@ -13,6 +13,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const ownerTokenHash = ownerTokenHashForRequest(request);
   if (!ownerTokenHash) return apiError("LEVEL_NOT_FOUND", "Question or completed level not found.");
   if (!isUuid(id)) return apiError("LEVEL_NOT_FOUND", "Question or completed level not found.");
+  try {
   const question = await prisma.question.findFirst({
     where: { id, levelVersion: { job: { ownerTokenHash } } },
     include: { levelVersion: { include: { job: true, keyPhrases: { orderBy: { position: "asc" } } } } },
@@ -26,7 +27,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return response;
   }
 
-  try {
     const output = await generateQuestions(
       question.levelVersion.job.lang as SupportedLang,
       question.levelVersion.levelCode,
@@ -61,6 +61,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       keyPhraseId: updated.keyPhraseId,
     });
   } catch (error) {
-    return apiError(error instanceof LlmError ? "LLM_ERROR" : "INTERNAL_ERROR");
+    return error instanceof LlmError ? apiError("LLM_ERROR") : unexpectedApiError(error);
   }
 }

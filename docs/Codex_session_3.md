@@ -87,3 +87,11 @@
 - Converted unexpected PDF export and question-regeneration failures to the existing structured `INTERNAL_ERROR` / `LLM_ERROR` API responses.
 - Replaced the article importer's hostname-based global fetch with a Node standard-library request whose DNS lookup is pinned to the validated public IP for each redirect, preventing DNS rebinding after SSRF validation.
 - Added export-validation coverage. Delivery commit: `6d749c6`.
+
+## Follow-up: Submission-focused route resilience and headers (2026-07-19)
+
+- Added a shared unexpected-route error helper and applied it to all API routes so database, external-service, and rendering failures produce the documented structured error response without logging request content.
+- Added generous anonymous owner-plus-IP rate limits to language detection; its response now establishes the same HTTP-only workspace cookie used by the rest of the application.
+- Added Node startup environment validation and tests for required production configuration without exposing secret values.
+- Added application-wide CSP, anti-framing, MIME-sniffing, referrer, and permissions headers.
+- Delivery commit: pending.
