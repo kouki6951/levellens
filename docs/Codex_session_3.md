@@ -119,4 +119,4 @@
 ## Follow-up: PDF preview blob-frame CSP compatibility (2026-07-19)
 
 - Allowed `blob:` only for `frame-src` and `worker-src`, which is required by the `PDFViewer` iframe used for the in-browser preview.
-- Kept `frame-ancestors 'none'`, `object-src 'none'`, and JavaScript `unsafe-eval` disabled. Delivery commit: pending.
+- Kept `frame-ancestors 'none'`, `object-src 'none'`, and JavaScript `unsafe-eval` disabled. Delivery commit: `4fad0a0`.
