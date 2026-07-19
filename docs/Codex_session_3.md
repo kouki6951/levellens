@@ -105,4 +105,4 @@
 ## Follow-up: Local rate-limit testing recovery (2026-07-19)
 
 - Disabled persistent rate-limit accounting only when `NODE_ENV !== production`, so repeated local development checks do not lock the browser out after debugging requests.
-- Production and Vercel preview deployments retain owner-plus-IP quotas. Added coverage for the local-development bypass. Delivery commit: pending.
+- Production and Vercel preview deployments retain owner-plus-IP quotas. Added coverage for the local-development bypass. Delivery commit: `bf167e3`.
