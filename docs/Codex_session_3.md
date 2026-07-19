@@ -60,3 +60,8 @@
 - Replaced the scaffold README with an English canonical project README covering the Education use case, setup, judge testing, privacy, architecture, third-party materials, GPT-5.6/Codex collaboration, dated evidence, and the primary `/feedback` session ID.
 - Added linked Spanish and Japanese README translations, English judge testing instructions, a submission checklist, a sub-three-minute English demo-video script, and an MIT license.
 - Kept deployment and YouTube submission links as explicit pre-submission checklist items rather than claiming they are complete. Delivery commit: `0d9a91f`.
+
+## Follow-up: Pasted-material source validation repair (2026-07-19)
+
+- Fixed `POST /api/simplify` rejecting pasted material as `URL_INVALID` when the browser serialized its absent citation as `source: null`.
+- The client now omits absent citations, and the API accepts `null` as backward-compatible no-citation input. Added validation coverage. Delivery commit: `f8f6fe4`.
