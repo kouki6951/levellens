@@ -106,3 +106,7 @@
 
 - Disabled persistent rate-limit accounting only when `NODE_ENV !== production`, so repeated local development checks do not lock the browser out after debugging requests.
 - Production and Vercel preview deployments retain owner-plus-IP quotas. Added coverage for the local-development bypass. Delivery commit: `bf167e3`.
+
+## Follow-up: Rate-limit documentation (2026-07-19)
+
+- Expanded the English README with exact production rate-limit windows, 429 behavior, owner-plus-IP enforcement, and the intentional local-development bypass for repeatable smoke tests. Delivery commit: pending.

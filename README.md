@@ -106,6 +106,18 @@ Detailed session evidence is retained in [docs/Codex_session_1.md](docs/Codex_se
 - Conversion, import, regeneration, and export are rate-limited by hashed owner and IP subjects.
 - `vercel.json` schedules protected cleanup daily at 03:00 UTC. With `CRON_SECRET` configured, jobs older than 14 days and derived data are deleted.
 
+### Production Rate Limits
+
+Rate limits apply independently to the hashed anonymous workspace token and forwarded IP address; exceeding either limit returns `429 RATE_LIMITED` with `Retry-After`. They are enabled when `NODE_ENV=production` (including Vercel Production and Preview deployments). Local `npm run dev` intentionally bypasses persistent quotas so teachers and judges can repeat smoke tests without being locked out.
+
+| Route | Short window | Daily limit |
+| --- | --- | --- |
+| Language detection | 300 requests / 5 minutes | 5,000 requests |
+| Conversion | 2 requests / 10 minutes | 8 requests |
+| URL import | 5 requests / 10 minutes | 20 requests |
+| Level or question regeneration | 4 requests / 10 minutes | 20 requests |
+| PDF export | 8 requests / 10 minutes | 30 requests |
+
 ## Third-Party Software and Assets
 
 - Dependencies and their licenses are listed in `package.json` and `package-lock.json`; notable libraries include Prisma, the OpenAI SDK, Cheerio, `franc`, `text-readability`, and `@react-pdf/renderer`.
