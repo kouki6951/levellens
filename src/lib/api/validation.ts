@@ -9,6 +9,12 @@ export function isUuid(value: string) {
 }
 
 export type SourceCitation = { url: string; title: string; domain: string; accessedAt: string };
+export type ExportPayload = {
+  jobId: string;
+  levelCodes: string[];
+  include?: { keyPhraseBox?: boolean; questions?: boolean; answerPage?: boolean; teacherSummary?: boolean };
+  locale?: "en" | "es" | "ja";
+};
 
 export function validatePublicHttpUrl(value: unknown): URL | null {
   if (typeof value !== "string" || value.length > 2048) return null;
@@ -19,6 +25,27 @@ export function validatePublicHttpUrl(value: unknown): URL | null {
   } catch {
     return null;
   }
+}
+
+export function validateExportPayload(payload: unknown): ExportPayload | null {
+  if (!payload || typeof payload !== "object") return null;
+  const body = payload as Record<string, unknown>;
+  if (typeof body.jobId !== "string" || !isUuid(body.jobId)) return null;
+  if (!Array.isArray(body.levelCodes) || body.levelCodes.length < 1 || body.levelCodes.length > 4) return null;
+  if (!body.levelCodes.every((code) => typeof code === "string" && /^[a-z0-9_-]{1,20}$/i.test(code))) return null;
+  if (new Set(body.levelCodes).size !== body.levelCodes.length) return null;
+
+  let include: ExportPayload["include"];
+  if (body.include !== undefined) {
+    if (!body.include || typeof body.include !== "object") return null;
+    const candidate = body.include as Record<string, unknown>;
+    const allowed = ["keyPhraseBox", "questions", "answerPage", "teacherSummary"];
+    if (Object.keys(candidate).some((key) => !allowed.includes(key)) || Object.values(candidate).some((value) => typeof value !== "boolean")) return null;
+    include = candidate as ExportPayload["include"];
+  }
+
+  if (body.locale !== undefined && !isSupportedLang(body.locale)) return null;
+  return { jobId: body.jobId, levelCodes: body.levelCodes, include, locale: body.locale };
 }
 
 export function validateSimplifyPayload(payload: unknown):

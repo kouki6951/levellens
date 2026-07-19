@@ -1,5 +1,8 @@
 import "server-only";
 import { lookup } from "node:dns/promises";
+import { request as httpRequest } from "node:http";
+import { request as httpsRequest } from "node:https";
+import type { IncomingHttpHeaders } from "node:http";
 import * as cheerio from "cheerio";
 import { validatePublicHttpUrl } from "@/lib/api/validation";
 
@@ -17,6 +20,9 @@ export type ImportedArticle = {
   truncated: boolean;
 };
 
+type PublicAddress = { address: string; family: number };
+type ImportedResponse = { status: number; headers: IncomingHttpHeaders; body: Buffer };
+
 export class ArticleImportError extends Error {
   constructor(public readonly code: "URL_INVALID" | "URL_FETCH_FAILED" | "URL_CONTENT_UNSUPPORTED" | "URL_CONTENT_TOO_LARGE") {
     super(code);
@@ -31,11 +37,50 @@ function isPrivateAddress(address: string) {
   return parts[0] === 0 || parts[0] === 10 || parts[0] === 127 || parts[0] === 169 && parts[1] === 254 || parts[0] === 192 && parts[1] === 168 || parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31;
 }
 
-async function assertPublicUrl(url: URL) {
+async function publicAddressesForUrl(url: URL): Promise<PublicAddress[]> {
   const hostname = url.hostname.toLowerCase();
   if (hostname === "localhost" || hostname.endsWith(".localhost") || hostname.endsWith(".local")) throw new ArticleImportError("URL_INVALID");
   const records = await lookup(hostname, { all: true, verbatim: true }).catch(() => { throw new ArticleImportError("URL_FETCH_FAILED"); });
   if (records.length === 0 || records.some((record) => isPrivateAddress(record.address))) throw new ArticleImportError("URL_INVALID");
+  return records;
+}
+
+function headerValue(headers: IncomingHttpHeaders, name: string) {
+  const value = headers[name];
+  return Array.isArray(value) ? value[0] || "" : value || "";
+}
+
+/** Pins the outbound connection to a DNS-validated public address. */
+async function fetchPinnedPublicUrl(url: URL, addresses: PublicAddress[]): Promise<ImportedResponse> {
+  const address = addresses[0];
+  const request = url.protocol === "https:" ? httpsRequest : httpRequest;
+
+  return new Promise((resolve, reject) => {
+    const outbound = request(url, {
+      headers: {
+        "User-Agent": "LevelLens article importer/1.0",
+        Accept: "text/html,application/xhtml+xml",
+        "Accept-Encoding": "identity",
+      },
+      lookup: (_hostname, _options, callback) => callback(null, address.address, address.family),
+    }, (response) => {
+      const chunks: Buffer[] = [];
+      let byteLength = 0;
+      response.on("data", (chunk: Buffer) => {
+        byteLength += chunk.length;
+        if (byteLength > MAX_RESPONSE_BYTES) {
+          outbound.destroy(new ArticleImportError("URL_CONTENT_TOO_LARGE"));
+          return;
+        }
+        chunks.push(chunk);
+      });
+      response.on("end", () => resolve({ status: response.statusCode || 0, headers: response.headers, body: Buffer.concat(chunks) }));
+      response.on("error", reject);
+    });
+    outbound.setTimeout(REQUEST_TIMEOUT_MS, () => outbound.destroy(new ArticleImportError("URL_FETCH_FAILED")));
+    outbound.on("error", reject);
+    outbound.end();
+  });
 }
 
 function normalizeText(value: string) {
@@ -57,31 +102,28 @@ export async function importArticle(rawUrl: unknown): Promise<ImportedArticle> {
   if (!url) throw new ArticleImportError("URL_INVALID");
 
   for (let redirect = 0; redirect <= MAX_REDIRECTS; redirect += 1) {
-    await assertPublicUrl(url);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-    let response: Response;
+    const addresses = await publicAddressesForUrl(url);
+    let response: ImportedResponse;
     try {
-      response = await fetch(url, { redirect: "manual", signal: controller.signal, headers: { "User-Agent": "LevelLens article importer/1.0", Accept: "text/html,application/xhtml+xml" } });
-    } catch {
+      response = await fetchPinnedPublicUrl(url, addresses);
+    } catch (error) {
+      if (error instanceof ArticleImportError) throw error;
       throw new ArticleImportError("URL_FETCH_FAILED");
-    } finally {
-      clearTimeout(timeout);
     }
     if (response.status >= 300 && response.status < 400) {
-      const location = response.headers.get("location");
+      const location = headerValue(response.headers, "location");
       if (!location || redirect === MAX_REDIRECTS) throw new ArticleImportError("URL_FETCH_FAILED");
       url = validatePublicHttpUrl(new URL(location, url).toString());
       if (!url) throw new ArticleImportError("URL_INVALID");
       continue;
     }
-    if (!response.ok) throw new ArticleImportError("URL_FETCH_FAILED");
-    const contentType = response.headers.get("content-type") || "";
+    if (response.status < 200 || response.status >= 300) throw new ArticleImportError("URL_FETCH_FAILED");
+    const contentType = headerValue(response.headers, "content-type");
     if (!/^(text\/html|application\/xhtml\+xml)\b/i.test(contentType)) throw new ArticleImportError("URL_CONTENT_UNSUPPORTED");
-    const contentLength = Number(response.headers.get("content-length") || 0);
+    const contentLength = Number(headerValue(response.headers, "content-length"));
     if (contentLength > MAX_RESPONSE_BYTES) throw new ArticleImportError("URL_CONTENT_TOO_LARGE");
-    const html = await response.text();
-    if (html.length > MAX_RESPONSE_BYTES) throw new ArticleImportError("URL_CONTENT_TOO_LARGE");
+    if (headerValue(response.headers, "content-encoding") && headerValue(response.headers, "content-encoding") !== "identity") throw new ArticleImportError("URL_CONTENT_UNSUPPORTED");
+    const html = response.body.toString("utf8");
     const extracted = extractArticleHtml(html);
     if (extracted.text.length < 200) throw new ArticleImportError("URL_CONTENT_UNSUPPORTED");
     const truncated = extracted.text.length > MAX_ARTICLE_CHARACTERS;

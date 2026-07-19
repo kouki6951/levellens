@@ -80,3 +80,10 @@
 - Marked database, pipeline, article-import, ownership/rate-limit, background, and OpenAI client modules as server-only. Vitest uses a test-only alias so this build-time guard does not change test execution.
 - Added safe handling for malformed language-detection JSON and invalid UUID route parameters; valid requests retain their existing behavior and responses.
 - Delivery commit: `e2fd468`.
+
+## Follow-up: API validation, structured errors, and URL DNS pinning (2026-07-19)
+
+- Added complete runtime validation for PDF export requests: UUID, 1-4 unique level codes, supported locale, and optional boolean include flags.
+- Converted unexpected PDF export and question-regeneration failures to the existing structured `INTERNAL_ERROR` / `LLM_ERROR` API responses.
+- Replaced the article importer's hostname-based global fetch with a Node standard-library request whose DNS lookup is pinned to the validated public IP for each redirect, preventing DNS rebinding after SSRF validation.
+- Added export-validation coverage. Delivery commit: pending.
