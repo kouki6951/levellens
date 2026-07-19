@@ -71,4 +71,4 @@
 - Diagnosed a production-style job where one Japanese level completed but two remained in `verifying` after the serverless request stopped: the `waitUntil` task was still bounded by the route's prior 60-second function duration.
 - Raised conversion and per-level regeneration route duration requests to 300 seconds, without reducing verification attempts or quality checks.
 - Added no-progress recovery: after 180 seconds without a job event, the status endpoint records `job_stalled`, marks active levels failed, and finalizes the job as `failed` or `partially_failed`. The UI then stops polling and offers normal level regeneration.
-- Added unit coverage for the inactivity boundary. Delivery commit: pending.
+- Added unit coverage for the inactivity boundary. Delivery commit: `64123ed`.
