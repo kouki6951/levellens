@@ -79,4 +79,4 @@
 - Scoped stalled-job recovery to the anonymous owner token before it can mutate a job, preventing a caller who knows another job ID from triggering its terminal transition.
 - Marked database, pipeline, article-import, ownership/rate-limit, background, and OpenAI client modules as server-only. Vitest uses a test-only alias so this build-time guard does not change test execution.
 - Added safe handling for malformed language-detection JSON and invalid UUID route parameters; valid requests retain their existing behavior and responses.
-- Delivery commit: pending.
+- Delivery commit: `e2fd468`.
