@@ -58,6 +58,7 @@ Open `http://localhost:3000`.
 | `OPENAI_API_KEY` | Yes | Server-only OpenAI API key. |
 | `OPENAI_MODEL` | No | Defaults to `gpt-5.6`. |
 | `OPENAI_TIMEOUT_MS` | No | OpenAI request timeout in milliseconds. |
+| `PIPELINE_STALL_TIMEOUT_MS` | No | No-progress timeout in milliseconds before an abandoned background job is marked failed; defaults to `180000`. |
 | `MAX_VERIFY_ATTEMPTS` | No | Readability verification limit; defaults to `3`. |
 | `CRON_SECRET` | Production | Long random secret for the Vercel retention cron. |
 

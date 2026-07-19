@@ -247,6 +247,7 @@
 | DATABASE_URL | Postgres 接続 |
 | MAX_VERIFY_ATTEMPTS | 検証ループ上限（既定 3） |
 | OPENAI_TIMEOUT_MS | One OpenAI request timeout in milliseconds (default 45000) |
+| PIPELINE_STALL_TIMEOUT_MS | Background job no-progress timeout in milliseconds (default 180000) |
 
 ### Progressive result contract (all languages)
 
@@ -258,6 +259,12 @@
 - Level status values also include `key_phrases` and `questions` after `fact_checking`.
 
 Clients must render partial results and loading placeholders per card for EN, ES, and JA rather than waiting for a whole level to complete.
+
+### Background timeout recovery
+
+- The conversion and single-level regeneration routes request a 300-second serverless duration because a level can make several sequential Structured Outputs calls.
+- `waitUntil` does not override a host's hard execution limit. On each job-status request, a job that has no new `job_events` for `PIPELINE_STALL_TIMEOUT_MS` is finalized as `failed` or `partially_failed`; active levels become `failed` and can be regenerated.
+- This prevents a browser from polling a permanently abandoned `verifying` state indefinitely while preserving completed sibling levels.
 
 ---
 

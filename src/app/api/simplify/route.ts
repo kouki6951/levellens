@@ -8,7 +8,8 @@ import { runPipeline } from "@/lib/pipeline";
 import { addOwnerCookie, ownerSessionForRequest } from "@/lib/api/ownership";
 import { enforceRateLimit } from "@/lib/api/rate-limit";
 
-export const maxDuration = 60;
+// The pipeline makes several sequential Structured Outputs calls after the first draft.
+export const maxDuration = 300;
 
 export async function POST(request: Request) {
   const ownerSession = ownerSessionForRequest(request);

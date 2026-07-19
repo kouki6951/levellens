@@ -6,7 +6,7 @@ import { runPipelineForLevel } from "@/lib/pipeline";
 import { ownerTokenHashForRequest } from "@/lib/api/ownership";
 import { enforceRateLimit } from "@/lib/api/rate-limit";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
