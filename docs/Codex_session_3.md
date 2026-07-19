@@ -94,4 +94,4 @@
 - Added generous anonymous owner-plus-IP rate limits to language detection; its response now establishes the same HTTP-only workspace cookie used by the rest of the application.
 - Added Node startup environment validation and tests for required production configuration without exposing secret values.
 - Added application-wide CSP, anti-framing, MIME-sniffing, referrer, and permissions headers.
-- Delivery commit: pending.
+- Delivery commit: `11d13a1`.
