@@ -319,3 +319,10 @@ Glosses explain how an expression works in the sentence at the target reading le
 
 - `GET /api/jobs/[id]` returns `levels[].result.title`, the title generated for that individual reading level. `sourceTitle` remains the stable source title.
 - If a readability-revision request fails only after a usable draft has already been deterministically scored, the pipeline logs `verify_revision_failed` and continues with the last draft as an out-of-range near-match. It does not fail the entire level or sibling levels.
+
+### Anonymous ownership, quotas, and retention (v1.4, 2026-07-19)
+
+- `POST /api/import-url` and `POST /api/simplify` create or reuse a 14-day HTTP-only `levellens_owner` cookie. The API stores only its SHA-256 hash on each newly created job.
+- `GET /api/history`, `GET /api/jobs/[id]`, `POST /api/export`, and both regeneration routes require the matching owner cookie. A missing or mismatched cookie returns an empty history or a not-found response, so job IDs cannot be used to enumerate other users' materials.
+- Costly routes enforce both short-window and daily quotas against hashed anonymous-owner and forwarded-IP subjects. `429 RATE_LIMITED` includes a `Retry-After` header.
+- Vercel Cron calls `GET /api/maintenance/purge` daily with `Authorization: Bearer $CRON_SECRET`. It removes jobs older than 14 days and rate-limit rows older than 2 days. The endpoint returns `401 UNAUTHORIZED` without the configured secret.

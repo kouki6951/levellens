@@ -13,6 +13,7 @@ export type ApiErrorCode =
   | "LEVEL_NOT_FOUND"
   | "LEVEL_NOT_READY"
   | "RATE_LIMITED"
+  | "UNAUTHORIZED"
   | "INTERNAL_ERROR"
   | "LLM_ERROR";
 
@@ -29,6 +30,7 @@ const STATUS_BY_CODE: Record<ApiErrorCode, number> = {
   LEVEL_NOT_FOUND: 404,
   LEVEL_NOT_READY: 409,
   RATE_LIMITED: 429,
+  UNAUTHORIZED: 401,
   INTERNAL_ERROR: 500,
   LLM_ERROR: 502,
 };
@@ -46,6 +48,7 @@ const MESSAGE_BY_CODE: Record<ApiErrorCode, string> = {
   LEVEL_NOT_FOUND: "Level not found.",
   LEVEL_NOT_READY: "Level is not ready.",
   RATE_LIMITED: "Too many requests.",
+  UNAUTHORIZED: "Unauthorized.",
   INTERNAL_ERROR: "Unexpected server error.",
   LLM_ERROR: "OpenAI request failed.",
 };

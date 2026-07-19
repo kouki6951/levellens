@@ -4,14 +4,25 @@ import { apiError } from "@/lib/api/errors";
 import { prisma } from "@/lib/db";
 import { generateQuestions } from "@/lib/llm";
 import type { SupportedLang } from "@/lib/levels";
+import { ownerTokenHashForRequest } from "@/lib/api/ownership";
+import { enforceRateLimit } from "@/lib/api/rate-limit";
 
-export async function POST(_request: Request, context: { params: Promise<{ id: string }> }) {
+export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
-  const question = await prisma.question.findUnique({
-    where: { id },
+  const ownerTokenHash = ownerTokenHashForRequest(request);
+  if (!ownerTokenHash) return apiError("LEVEL_NOT_FOUND", "Question or completed level not found.");
+  const question = await prisma.question.findFirst({
+    where: { id, levelVersion: { job: { ownerTokenHash } } },
     include: { levelVersion: { include: { job: true, keyPhrases: { orderBy: { position: "asc" } } } } },
   });
   if (!question || !question.levelVersion.simplifiedText) return apiError("LEVEL_NOT_FOUND", "Question or completed level not found.");
+
+  const rateLimit = await enforceRateLimit(request, ownerTokenHash, "regenerate");
+  if (!rateLimit.allowed) {
+    const response = apiError("RATE_LIMITED", "Regeneration limit reached. Please try again later.");
+    response.headers.set("Retry-After", String(rateLimit.retryAfterSeconds));
+    return response;
+  }
 
   const output = await generateQuestions(
     question.levelVersion.job.lang as SupportedLang,

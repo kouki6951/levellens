@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { apiError } from "@/lib/api/errors";
 import { compareLevelCodes } from "@/lib/levels";
+import { ownerTokenHashForRequest } from "@/lib/api/ownership";
 
 function progressFor(status: string, attempt: number) {
   const stepByStatus: Record<string, string> = {
@@ -16,10 +17,12 @@ function progressFor(status: string, attempt: number) {
   return { step: stepByStatus[status] || status, attempt, maxAttempts: Number(process.env.MAX_VERIFY_ATTEMPTS || 3) };
 }
 
-export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
-  const job = await prisma.job.findUnique({
-    where: { id },
+  const ownerTokenHash = ownerTokenHashForRequest(request);
+  if (!ownerTokenHash) return apiError("JOB_NOT_FOUND");
+  const job = await prisma.job.findFirst({
+    where: { id, ownerTokenHash },
     include: {
       levelVersions: {
         orderBy: { createdAt: "asc" },

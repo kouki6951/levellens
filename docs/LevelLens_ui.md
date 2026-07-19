@@ -249,3 +249,9 @@
 - After a successful import, the extracted title, text, source domain, and access date are retained. The extracted text remains editable in the same teaching-material textarea before conversion.
 - The client shows a clear error for private, inaccessible, non-HTML, paywalled, or oversized sources. Bulk URLs, PDFs, and authenticated sources are out of scope.
 - Result and worksheet views show source attribution only when the material originated from an imported URL.
+
+### Anonymous workspace privacy and retention
+
+- No sign-in is shown. The browser receives an HTTP-only anonymous workspace cookie when it imports or creates material.
+- History, Result, Questions, Export, and regeneration are available only in the browser that created the job. Shared job URLs are intentionally not supported in the public-hosting configuration.
+- Materials and their derived results are automatically removed after 14 days. The UI treats legacy jobs without an owner cookie as unavailable rather than exposing their content.

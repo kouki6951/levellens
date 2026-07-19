@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LevelLens
 
-## Getting Started
+LevelLens turns one English, Spanish, or Japanese teaching text into multiple reading-level versions. Each version is checked with deterministic readability scoring, fact consistency review, language-focus notes, and comprehension questions.
 
-First, run the development server:
+## Setup
 
 ```bash
+npm install
+cp .env.example .env
+npx prisma generate
+npx prisma db push
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Required | Purpose |
+|---|---:|---|
+| `DATABASE_URL` | Yes | Neon/PostgreSQL connection string. |
+| `OPENAI_API_KEY` | Yes | Server-side key for Structured Outputs calls. |
+| `OPENAI_MODEL` | No | Defaults to `gpt-5.6`. |
+| `OPENAI_TIMEOUT_MS` | No | OpenAI request timeout in milliseconds. |
+| `MAX_VERIFY_ATTEMPTS` | No | Readability verification loop limit; defaults to `3`. |
+| `CRON_SECRET` | Production | Long random secret used by the Vercel retention cron. |
 
-## Learn More
+## Privacy and public-hosting safeguards
 
-To learn more about Next.js, take a look at the following resources:
+- No account is required. The browser receives a 14-day HTTP-only anonymous owner cookie when importing or creating material. The database stores only a SHA-256 hash; jobs, History, results, question regeneration, and PDF export require the matching browser cookie.
+- Existing jobs created before this safeguard have no owner hash and are intentionally unavailable through the protected APIs.
+- Conversion, URL import, regeneration, and PDF export use owner-plus-IP rate limits with both short windows and daily quotas. Rate-limit subjects are SHA-256 hashes.
+- `vercel.json` invokes `GET /api/maintenance/purge` daily at 03:00 UTC. With `CRON_SECRET` configured, the route deletes jobs older than 14 days and rate-limit records older than 2 days. Cascade deletion removes derived level data.
+- URL import accepts one public HTML article only and applies SSRF, redirect, response-size, and timeout safeguards.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Architecture
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `src/lib/readability`: deterministic EN/ES/JA scorers.
+- `src/lib/llm`: Structured Outputs client and prompt builders.
+- `src/lib/pipeline.ts`: parallel per-level conversion and verification pipeline.
+- `src/app/api`: job, import, export, maintenance, ownership, and quota-protected routes.
+- `prisma/schema.prisma`: PostgreSQL data model.
 
-## Deploy on Vercel
+## Verification
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm test
+npx tsc --noEmit
+npm run lint
+npm run build
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## OpenAI and Codex use
+
+GPT-5.6 is called only from server-side pipeline steps through the OpenAI SDK and JSON Schema Structured Outputs. Codex was used to scaffold the project, implement deterministic scoring and pipeline behavior, improve UI, add the safe URL import, and add public-hosting safeguards. Session records are in `docs/Codex_session_1.md` through `docs/Codex_session_3.md`.
+
+## Third-party libraries and assets
+
+Third-party packages are listed in `package.json`, including Prisma, OpenAI SDK, `text-readability`, `franc`, Cheerio, and `@react-pdf/renderer`. The LevelLens logo assets were generated with ChatGPT and are stored under `public/images/`.

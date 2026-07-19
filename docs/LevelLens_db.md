@@ -184,3 +184,9 @@ The extracted teaching text remains in `source_text`. URL metadata is optional s
 ### Per-level generated title (v1.3, 2026-07-18)
 
 `level_versions.generated_title` is a nullable `varchar(200)` produced together with `simplified_text`. It belongs to one reading level and must never overwrite `jobs.source_title`, which remains stable source metadata.
+
+### Anonymous ownership and retention (v1.4, 2026-07-19)
+
+`jobs.owner_token_hash` is a nullable `varchar(64)` SHA-256 hash of a browser-local anonymous owner token. Newly created jobs must set it; the nullable shape preserves pre-existing rows during migration, and legacy rows are intentionally excluded from protected APIs.
+
+`rate_limit_windows` stores only hashed rate-limit subjects, scope, fixed-window start, and request count. It has no relation to user content and is purged after two days. A daily protected maintenance route removes jobs older than 14 days; `onDelete: Cascade` deletes their level versions, reports, phrases, questions, and event records.

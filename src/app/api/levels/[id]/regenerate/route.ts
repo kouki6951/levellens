@@ -3,15 +3,26 @@ import { apiError } from "@/lib/api/errors";
 import { runInBackground } from "@/lib/background";
 import { prisma } from "@/lib/db";
 import { runPipelineForLevel } from "@/lib/pipeline";
+import { ownerTokenHashForRequest } from "@/lib/api/ownership";
+import { enforceRateLimit } from "@/lib/api/rate-limit";
 
 export const maxDuration = 60;
 
-export async function POST(_request: Request, context: { params: Promise<{ id: string }> }) {
+export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
-  const level = await prisma.levelVersion.findUnique({ where: { id }, select: { id: true, status: true, inRange: true } });
+  const ownerTokenHash = ownerTokenHashForRequest(request);
+  if (!ownerTokenHash) return apiError("LEVEL_NOT_FOUND");
+  const level = await prisma.levelVersion.findFirst({ where: { id, job: { ownerTokenHash } }, select: { id: true, status: true, inRange: true } });
   if (!level) return apiError("LEVEL_NOT_FOUND");
   if (level.status !== "failed" && !(level.status === "completed" && level.inRange === false)) {
     return apiError("LEVEL_NOT_READY", "Only failed or near-match levels can be regenerated.");
+  }
+
+  const rateLimit = await enforceRateLimit(request, ownerTokenHash, "regenerate");
+  if (!rateLimit.allowed) {
+    const response = apiError("RATE_LIMITED", "Regeneration limit reached. Please try again later.");
+    response.headers.set("Retry-After", String(rateLimit.retryAfterSeconds));
+    return response;
   }
 
   runInBackground(runPipelineForLevel(level.id));

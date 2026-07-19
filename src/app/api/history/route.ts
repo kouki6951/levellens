@@ -1,7 +1,11 @@
 import { prisma } from "@/lib/db";
+import { ownerTokenHashForRequest } from "@/lib/api/ownership";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const ownerTokenHash = ownerTokenHashForRequest(request);
+  if (!ownerTokenHash) return Response.json([]);
   const jobs = await prisma.job.findMany({
+    where: { ownerTokenHash },
     orderBy: { createdAt: "desc" },
     take: 30,
     include: { levelVersions: { select: { status: true, levelCode: true, levelLabel: true } } },
