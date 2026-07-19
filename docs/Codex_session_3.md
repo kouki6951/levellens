@@ -54,3 +54,9 @@
 - Added owner-plus-IP fixed-window and daily quotas for conversion, URL import, regeneration, and PDF export. Quota records are hashed and deleted after two days.
 - Added a CRON_SECRET-protected daily Vercel maintenance endpoint that cascade-deletes jobs and all derived data after 14 days.
 - Updated README, `.env.example`, UI/API/DB design documents, and this session record. Delivery commit: `f6362ad`.
+
+## Follow-up: Build Week submission documentation (2026-07-19)
+
+- Replaced the scaffold README with an English canonical project README covering the Education use case, setup, judge testing, privacy, architecture, third-party materials, GPT-5.6/Codex collaboration, dated evidence, and the primary `/feedback` session ID.
+- Added linked Spanish and Japanese README translations, English judge testing instructions, a submission checklist, a sub-three-minute English demo-video script, and an MIT license.
+- Kept deployment and YouTube submission links as explicit pre-submission checklist items rather than claiming they are complete. Delivery commit: `0d9a91f`.
