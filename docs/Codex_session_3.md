@@ -86,4 +86,4 @@
 - Added complete runtime validation for PDF export requests: UUID, 1-4 unique level codes, supported locale, and optional boolean include flags.
 - Converted unexpected PDF export and question-regeneration failures to the existing structured `INTERNAL_ERROR` / `LLM_ERROR` API responses.
 - Replaced the article importer's hostname-based global fetch with a Node standard-library request whose DNS lookup is pinned to the validated public IP for each redirect, preventing DNS rebinding after SSRF validation.
-- Added export-validation coverage. Delivery commit: pending.
+- Added export-validation coverage. Delivery commit: `6d749c6`.
