@@ -109,4 +109,4 @@
 
 ## Follow-up: Rate-limit documentation (2026-07-19)
 
-- Expanded the English README with exact production rate-limit windows, 429 behavior, owner-plus-IP enforcement, and the intentional local-development bypass for repeatable smoke tests. Delivery commit: pending.
+- Expanded the English README with exact production rate-limit windows, 429 behavior, owner-plus-IP enforcement, and the intentional local-development bypass for repeatable smoke tests. Delivery commit: `a932bb1`.
