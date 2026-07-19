@@ -95,3 +95,9 @@
 - Added Node startup environment validation and tests for required production configuration without exposing secret values.
 - Added application-wide CSP, anti-framing, MIME-sniffing, referrer, and permissions headers.
 - Delivery commit: `11d13a1`.
+
+## Follow-up: URL import DNS pinning compatibility repair (2026-07-19)
+
+- Fixed the Node DNS `lookup` callback used for pinned article imports: Node requests addresses with `all: true`, so the callback now returns the required address-array shape.
+- Prefer validated IPv4 addresses when available because local and serverless environments can lack IPv6 egress; retain IPv6 as a fallback.
+- Verified a pinned TLS request to `news.yahoo.co.jp` returns `200 text/html`; added IPv4-preference unit coverage. Delivery commit: pending.

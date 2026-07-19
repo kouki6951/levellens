@@ -20,7 +20,7 @@ export type ImportedArticle = {
   truncated: boolean;
 };
 
-type PublicAddress = { address: string; family: number };
+export type PublicAddress = { address: string; family: number };
 type ImportedResponse = { status: number; headers: IncomingHttpHeaders; body: Buffer };
 
 export class ArticleImportError extends Error {
@@ -50,9 +50,14 @@ function headerValue(headers: IncomingHttpHeaders, name: string) {
   return Array.isArray(value) ? value[0] || "" : value || "";
 }
 
+export function selectPreferredPublicAddress(addresses: PublicAddress[]) {
+  return addresses.find((candidate) => candidate.family === 4) || addresses[0];
+}
+
 /** Pins the outbound connection to a DNS-validated public address. */
 async function fetchPinnedPublicUrl(url: URL, addresses: PublicAddress[]): Promise<ImportedResponse> {
-  const address = addresses[0];
+  // Prefer IPv4 because many serverless and local development networks have no IPv6 egress.
+  const address = selectPreferredPublicAddress(addresses);
   const request = url.protocol === "https:" ? httpsRequest : httpRequest;
 
   return new Promise((resolve, reject) => {
@@ -62,7 +67,13 @@ async function fetchPinnedPublicUrl(url: URL, addresses: PublicAddress[]): Promi
         Accept: "text/html,application/xhtml+xml",
         "Accept-Encoding": "identity",
       },
-      lookup: (_hostname, _options, callback) => callback(null, address.address, address.family),
+      lookup: (_hostname, options, callback) => {
+        if (options.all) {
+          callback(null, [address]);
+          return;
+        }
+        callback(null, address.address, address.family);
+      },
     }, (response) => {
       const chunks: Buffer[] = [];
       let byteLength = 0;

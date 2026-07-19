@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractArticleHtml } from "./article-import";
+import { extractArticleHtml, selectPreferredPublicAddress } from "./article-import";
 import { validatePublicHttpUrl } from "./api/validation";
 
 describe("article URL import", () => {
@@ -22,5 +22,12 @@ describe("article URL import", () => {
     expect(extracted.text).toContain("Students can measure");
     expect(extracted.text).not.toContain("Navigation");
     expect(extracted.text).not.toContain("Footer");
+  });
+
+  it("prefers a validated IPv4 address for pinned outbound connections", () => {
+    expect(selectPreferredPublicAddress([
+      { address: "2001:db8::1", family: 6 },
+      { address: "198.51.100.10", family: 4 },
+    ])).toEqual({ address: "198.51.100.10", family: 4 });
   });
 });
