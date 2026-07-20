@@ -126,3 +126,9 @@
 - Replaced the export route's Node stream response with a buffered PDF response, avoiding Node-to-Web stream compatibility differences in serverless route handlers.
 - Added an explicit output-file tracing rule for `NotoSansJP-Regular.otf`, so the Japanese PDF font is included with the Vercel export function rather than relying on the static asset deployment layout.
 - Verified PDF rendering against the latest completed database material and confirmed the production build traces the font in the `/api/export` function. Delivery commit: `16a284f`.
+
+## Follow-up: Submission demo production (2026-07-20)
+
+- Assisted production of a 67-second English narrated product demo from the entrant's original LevelLens screen recording.
+- Trimmed empty waiting time, retained New Material, deterministic verification, Language focus, and PDF worksheet scenes, and used OpenAI text-to-speech narration without background music.
+- The final MP4 is an external submission artifact and is not committed to the repository. No third-party article content, music, or brand assets were used in the exported demo.
