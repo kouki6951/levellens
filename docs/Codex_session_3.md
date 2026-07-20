@@ -120,3 +120,9 @@
 
 - Allowed `blob:` only for `frame-src` and `worker-src`, which is required by the `PDFViewer` iframe used for the in-browser preview.
 - Kept `frame-ancestors 'none'`, `object-src 'none'`, and JavaScript `unsafe-eval` disabled. Delivery commit: `4fad0a0`.
+
+## Follow-up: Server PDF download reliability (2026-07-20)
+
+- Replaced the export route's Node stream response with a buffered PDF response, avoiding Node-to-Web stream compatibility differences in serverless route handlers.
+- Added an explicit output-file tracing rule for `NotoSansJP-Regular.otf`, so the Japanese PDF font is included with the Vercel export function rather than relying on the static asset deployment layout.
+- Verified PDF rendering against the latest completed database material and confirmed the production build traces the font in the `/api/export` function. Delivery commit: `16a284f`.
