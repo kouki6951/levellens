@@ -92,6 +92,7 @@ This project was built and meaningfully extended during the OpenAI Build Week su
 | GPT-5.6 integration | Built Structured Outputs schemas and isolated prompt builders for rewrite, fact check, language focus, and questions. | Feed numeric scorer feedback to revisions; never ask the model to grade itself. |
 | Teacher workflow | Iterated on result comparison, progressive status, multilingual UI, questions, export, and history. | Keep the interface focused on teachers' review and classroom handoff. |
 | Public demo hardening | Added safe single-URL import, anonymous workspaces, quotas, and 14-day retention. | Avoid account friction while preventing cross-user history access and limiting API-cost exposure. |
+| Submission demo | Produced the English demo's edit plan, narration, captions, timing checks, and compliant screen selection. | Use only original LevelLens sample material and avoid third-party media or background music. |
 
 The primary Codex `/feedback` session/thread ID is:
 

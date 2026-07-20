@@ -134,3 +134,8 @@
 - Added burned-in English captions generated from a transcription of the generated narration.
 - Rebuilt the video using only the project's original "Gardens in the City" example. The History scene keeps only entries for that original example and whites out lower entries that contained third-party article text.
 - The final MP4 is an external submission artifact and is not committed to the repository. No third-party article content, music, or brand assets are present in the exported demo.
+
+## Follow-up: Demo timing refinement (2026-07-20)
+
+- Refined the externally stored submission video with Codex: replaced the white History mask with a focused crop, synchronized the History scene with its narration, and regenerated captions from an automatic transcription of the final narration audio.
+- Added five-second opening and closing holds using LevelLens UI screens rather than black frames.
