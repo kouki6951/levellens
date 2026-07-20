@@ -129,6 +129,8 @@
 
 ## Follow-up: Submission demo production (2026-07-20)
 
-- Assisted production of a 67-second English narrated product demo from the entrant's original LevelLens screen recording.
-- Trimmed empty waiting time, retained New Material, deterministic verification, Language focus, and PDF worksheet scenes, and used OpenAI text-to-speech narration without background music.
-- The final MP4 is an external submission artifact and is not committed to the repository. No third-party article content, music, or brand assets were used in the exported demo.
+- Assisted production of a 71-second English narrated product demo from the entrant's original LevelLens screen recording.
+- Trimmed empty waiting time, retained New Material, deterministic verification, Language focus, PDF worksheet, and History scenes, and used OpenAI text-to-speech narration without background music.
+- Added burned-in English captions generated from a transcription of the generated narration.
+- Rebuilt the video using only the project's original "Gardens in the City" example. The History scene keeps only entries for that original example and whites out lower entries that contained third-party article text.
+- The final MP4 is an external submission artifact and is not committed to the repository. No third-party article content, music, or brand assets are present in the exported demo.
