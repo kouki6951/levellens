@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  outputFileTracingIncludes: {
+    "/api/export": ["./public/fonts/NotoSansJP-Regular.otf"],
+  },
   async headers() {
     return [
       {

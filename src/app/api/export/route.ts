@@ -1,4 +1,4 @@
-import { renderToStream } from "@react-pdf/renderer";
+import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { apiError, unexpectedApiError } from "@/lib/api/errors";
 import { prisma } from "@/lib/db";
@@ -55,10 +55,10 @@ export async function POST(request: Request) {
       },
     }));
     const source = job.sourceUrl ? { url: job.sourceUrl, domain: job.sourceDomain || new URL(job.sourceUrl).hostname, accessedAt: job.sourceAccessedAt?.toISOString() ?? null } : null;
-    const stream = await renderToStream(React.createElement(WorksheetDocument, { title: job.sourceTitle || "LevelLens worksheet", source, levels: worksheetLevels, include, labels: worksheetLabelsFor(payload.locale ?? "en") }));
+    const pdf = await renderToBuffer(React.createElement(WorksheetDocument, { title: job.sourceTitle || "LevelLens worksheet", source, levels: worksheetLevels, include, labels: worksheetLabelsFor(payload.locale ?? "en") }));
     const filename = `LevelLens_${(job.sourceTitle || "worksheet").replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "") || "worksheet"}.pdf`;
 
-    return new Response(stream as unknown as ReadableStream, {
+    return new Response(new Uint8Array(pdf), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${filename}"`,
